@@ -1,0 +1,7 @@
+.loomi-studio-wrap .nav-tab-wrapper { margin-bottom: 1.25rem; }
+
+.loomi-studio-form .form-table th { width: 240px; }
+
+.loomi-logo-picker { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; max-width: 480px; }
+.loomi-logo-preview { max-width: 200px; max-height: 80px; background: #f0f0f1; padding: 6px; border: 1px solid #c3c4c7; border-radius: 4px; }
+.loomi-logo-preview[hidden] { display: none; }

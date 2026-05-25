@@ -48,7 +48,7 @@ Cada site WordPress da Loomi recebia, manualmente, o mesmo pacote de tweaks em `
 
 ## Instalação
 
-> ⚠️ **Dependência:** este plugin exige o **Wordfence Security** (gratuito, wp.org) ativo. Em **WP 6.5+** o WordPress bloqueia a ativação nativamente se Wordfence estiver ausente (via header `Requires Plugins:`). Em **WP 6.0-6.4** o plugin ativa, mas um aviso vermelho persiste em todo o admin até você clicar em **"Instalar Wordfence agora"** (botão dentro do próprio aviso). Admins sem `install_plugins` recebem instrução para pedir ao responsável pelo site.
+> ⚠️ **Dependência:** este plugin recomenda fortemente o **Wordfence Security** (gratuito, wp.org). A ativação **não é bloqueada** se Wordfence estiver ausente, mas um aviso vermelho persiste em todo o admin até você clicar em **"Instalar Wordfence agora"** (botão dentro do próprio aviso). Admins sem `install_plugins` recebem instrução para pedir ao responsável pelo site.
 
 ### Via FTP / Plugin Manager
 
@@ -293,7 +293,7 @@ O plugin passou por **review de segurança independente** antes do release. Veto
 | Update package URL hijack | `is_trusted_package_url()` — mesmo host + HTTPS |
 | CSRF em duplicate | `wp_nonce` + `check_admin_referer` por post ID |
 | Privilege escalation via role | Capabilities derivadas de editor menos lista explícita de proibidas |
-| Hardening de borda | Wordfence (peer plugin obrigatório, gating nativo em WP 6.5+) |
+| Hardening de borda | Wordfence (peer plugin recomendado, notice persistente + auto-install) |
 
 Reporte vulnerabilidades para `dev@loomi.studio` (sem disclosure público antes da correção).
 

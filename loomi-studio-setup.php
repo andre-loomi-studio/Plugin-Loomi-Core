@@ -6,7 +6,6 @@
  * Version:           1.0.0
  * Requires at least: 6.0
  * Requires PHP:      7.4
- * Requires Plugins:  wordfence
  * Author:            Loomi
  * Author URI:        https://loomi.studio
  * License:           GPL-2.0-or-later

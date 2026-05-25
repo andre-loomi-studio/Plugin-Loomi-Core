@@ -41,11 +41,11 @@ class Loomi_Settings {
 			'custom_login_enabled'  => false,
 			'custom_login_bg_color' => '#000000',
 			'custom_login_logo_id'  => 0,
-			'login_slug_enabled'    => false,
+			'login_slug_enabled'    => true,
 			'login_slug'            => 'studio-access',
 			'hide_menus_enabled'    => false,
 			'hidden_menus'          => array_keys( self::HIDEABLE_MENUS ),
-			'client_role_enabled'   => false,
+			'client_role_enabled'   => true,
 		];
 	}
 

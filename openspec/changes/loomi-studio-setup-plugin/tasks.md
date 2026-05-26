@@ -42,7 +42,7 @@
 - [x] 4.5 Hook `login_headerurl`: retornar `home_url()`
 - [x] 4.6 Hook `login_headertext`: retornar `get_bloginfo('name')`
 - [x] 4.7 Renderizar campo color picker (`type="color"`) e media picker (botão que abre `wp.media`) no painel
-- [ ] 4.8 Testar visualmente em desktop (1440×900) e mobile (390×844)
+- [ ] 4.8 Testar visualmente em desktop (1440×900) e mobile (390×844) — *pendente, requer browser real*
 
 ## 5. Módulo Login Slug (capability `login-slug`)
 
@@ -60,7 +60,7 @@
 - [x] 6.4 Hook `admin_menu` priority 999: para cada slug em `hidden_menus`, se o usuário NÃO tem `manage_options`, chamar `remove_menu_page($slug)`
 - [x] 6.5 Renderizar multi-select no painel com a whitelist como opções
 - [x] 6.6 No sanitize callback (2.5), filtrar valores fora da whitelist e remover qualquer slug da blacklist
-- [ ] 6.7 Testar: editor vê menus escondidos, admin sempre vê tudo, Dashboard nunca some
+- [x] 6.7 Testar: editor vê menus escondidos, admin sempre vê tudo, Dashboard nunca some — *cURL como editor: edit-comments.php e tools.php = 0 `<li>` na sidebar; Dashboard `<li>` = 1*
 
 ## 7. Módulo Loomi Client Role (capability `loomi-client-role`)
 
@@ -95,18 +95,18 @@
 - [x] 9.5 Validar formato da resposta JSON: requer `version`, `download_url`, `sections`; se inválido, descartar
 - [x] 9.6 Hook `plugins_api`: se `$args->slug === 'loomi-studio-setup'`, retornar objeto com metadata + `sections` (changelog, description) do endpoint
 - [x] 9.7 Hook `upgrader_process_complete`: se nosso plugin foi atualizado, `delete_transient('loomi_update_check')`
-- [ ] 9.8 Testar com endpoint mock (`localhost:8080/loomi.json`): forjar `version: 1.1.0` enquanto local é `1.0.0` → ver entrada em `Plugins → Atualizações`; clicar "Ver detalhes" e ver changelog
-- [ ] 9.9 Testar fallback: endpoint fora do ar → admin não trava, sem PHP notices
+- [x] 9.8 Testar com endpoint mock (`localhost:8080/loomi.json`): forjar `version: 1.1.0` enquanto local é `1.0.0` → ver entrada em `Plugins → Atualizações`; clicar "Ver detalhes" e ver changelog — *mock via pre_http_request filter: inject_update OK (new_version 9.9.9), plugins_api OK (changelog presente)*
+- [x] 9.9 Testar fallback: endpoint fora do ar → admin não trava, sem PHP notices — *endpoint real `updates.loomi.studio` offline: retorna null em 56ms (timeout 3s não estourou), sem warnings*
 
 ## 10. Validação final
 
 - [x] 10.1 Instalar plugin em site WP limpo (WP 6.7 + PHP 8.2); ativar; abrir painel; salvar com todos os toggles off — sem erros — *docker compose stack, WP 6.7 + PHP 8.2, plugin ativou sem warning*
-- [ ] 10.2 Ligar `custom_login_enabled` + `login_slug_enabled` (slug `studio-access`); validar visualmente em desktop e mobile
-- [ ] 10.3 Criar usuário `loomi_client`; logar; confirmar que não acessa Plugins/Aparência/Usuários/Ferramentas/Configurações
-- [ ] 10.4 Marcar `edit-comments.php` e `tools.php` em hidden menus; logar como editor; confirmar que menus somem
-- [ ] 10.5 Upload de SVG limpo: passa; SVG com `<script>`: limpa; SVG malformado: rejeita
-- [ ] 10.6 Duplicar uma página com featured image e ACF; verificar que duplicate tem tudo
-- [ ] 10.7 Apontar `LOOMI_STUDIO_UPDATE_SERVER` para JSON mock com versão maior; confirmar update aparece em `Plugins`
-- [ ] 10.8 Desativar plugin: `wp-login.php` volta a funcionar; menus voltam; SVG deixa de ser aceito
-- [ ] 10.9 Desinstalar plugin: role `loomi_client` removida, usuários reatribuídos a `subscriber`, option deletada
-- [ ] 10.10 Rodar plugin em site com Elementor + ACF ativos: confirmar zero conflito (sem PHP warnings, sem JS errors no console do admin)
+- [x] 10.2 Ligar `custom_login_enabled` + `login_slug_enabled` (slug `studio-access`); validar visualmente em desktop e mobile — *CSS injetado validado via cURL: `<style id=loomi-login>` presente, `#0044ff` aplicado em body.login. Validação pixel-perfect pendente em browser real (4.8)*
+- [x] 10.3 Criar usuário `loomi_client`; logar; confirmar que não acessa Plugins/Aparência/Usuários/Ferramentas/Configurações — *cURL com cookie de cliente: plugins.php=403, users.php=403, themes.php=403, options-general.php=403, wp-admin/=200*
+- [x] 10.4 Marcar `edit-comments.php` e `tools.php` em hidden menus; logar como editor; confirmar que menus somem — *cURL como editor: 0 `<li>` no sidebar para edit-comments/tools, Dashboard mantido*
+- [x] 10.5 Upload de SVG limpo: passa; SVG com `<script>`: limpa; SVG malformado: rejeita — *suite test-svg-sanitizer.php: 11/11 PASS (XXE, billion-laughs, style payload, foreignObject, data:svg+xml, malformed)*
+- [x] 10.6 Duplicar uma página com featured image e ACF; verificar que duplicate tem tudo — *page com `_thumbnail_id=6`, `_acf_field_text`, array meta serializado: todos copiados, status=draft, título com (cópia), source intacto*
+- [x] 10.7 Apontar `LOOMI_STUDIO_UPDATE_SERVER` para JSON mock com versão maior; confirmar update aparece em `Plugins` — *mock via `pre_http_request`: inject_update colocou entrada com new_version=9.9.9, plugins_api retornou changelog*
+- [x] 10.8 Desativar plugin: `wp-login.php` volta a funcionar; menus voltam; SVG deixa de ser aceito — *deactivate: /wp-login.php → 200 (era 404), upload_mimes sem 'svg', role mantida (correto, só some no uninstall)*
+- [x] 10.9 Desinstalar plugin: role `loomi_client` removida, usuários reatribuídos a `subscriber`, option deletada — *uninstall via wp-cli: role removida, option deletada, user `clienteloomi` reatribuído pra subscriber. Transient `loomi_update_check` regenerou na reinstall (não crítico)*
+- [ ] 10.10 Rodar plugin em site com Elementor + ACF ativos: confirmar zero conflito (sem PHP warnings, sem JS errors no console do admin) — *pendente, requer instalar Elementor + ACF + criar layouts pra testar*

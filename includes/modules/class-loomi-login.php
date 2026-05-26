@@ -4,28 +4,37 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-class Loomi_Login {
+class Loomi_Login implements Loomi_Module {
 
 	const ALLOWED_LOGIN_ACTIONS = [ 'logout', 'lostpassword', 'retrievepassword', 'rp', 'resetpass', 'postpass', 'register' ];
 
-	public static function init() : void {
-		if ( Loomi_Settings::get( 'custom_login_enabled' ) ) {
+	public static function register() : void {
+		if ( Settings_Repository::get_bool( 'custom_login_enabled' ) ) {
 			add_action( 'login_enqueue_scripts', [ __CLASS__, 'inject_login_styles' ] );
 			add_filter( 'login_headerurl', [ __CLASS__, 'login_logo_url' ] );
 			add_filter( 'login_headertext', [ __CLASS__, 'login_logo_title' ] );
 		}
 
-		if ( Loomi_Settings::get( 'login_slug_enabled' ) ) {
-			add_action( 'init', [ __CLASS__, 'register_rewrite_rule' ] );
+		if ( Settings_Repository::get_bool( 'login_slug_enabled' ) ) {
+			add_action( 'init', [ __CLASS__, 'maybe_serve_login' ], 1 );
 			add_action( 'login_init', [ __CLASS__, 'gate_wp_login' ], 1 );
-		}
 
-		add_action( 'update_option_' . Loomi_Settings::OPTION_KEY, [ __CLASS__, 'maybe_flush_rewrites' ], 10, 2 );
+			// Bloqueia leak da slug via /wp-admin/.
+			// Hook em init priority 1 dispara durante wp-settings.php, ANTES do
+			// wp-admin/admin.php chamar auth_redirect() (que faria 302 vazando a slug).
+			add_action( 'init', [ __CLASS__, 'gate_admin_endpoint' ], 1 );
+
+			add_filter( 'login_url',         [ __CLASS__, 'filter_login_url' ], 10, 3 );
+			add_filter( 'logout_url',        [ __CLASS__, 'filter_logout_url' ], 10, 2 );
+			add_filter( 'logout_redirect',   [ __CLASS__, 'filter_logout_redirect' ], 10, 3 );
+			add_filter( 'lostpassword_url',  [ __CLASS__, 'filter_lostpassword_url' ], 10, 2 );
+			add_filter( 'register_url',      [ __CLASS__, 'filter_register_url' ] );
+		}
 	}
 
 	public static function inject_login_styles() : void {
-		$bg       = Loomi_Settings::get( 'custom_login_bg_color', '#000000' );
-		$logo_id  = (int) Loomi_Settings::get( 'custom_login_logo_id', 0 );
+		$bg       = Settings_Repository::get( 'custom_login_bg_color', '#000000' );
+		$logo_id  = (int) Settings_Repository::get( 'custom_login_logo_id', 0 );
 		$logo_url = $logo_id ? wp_get_attachment_url( $logo_id ) : '';
 
 		$css  = 'body.login{background:' . esc_attr( $bg ) . ' !important;}';
@@ -52,57 +61,112 @@ class Loomi_Login {
 		return get_bloginfo( 'name' );
 	}
 
-	public static function register_rewrite_rule() : void {
-		$slug = (string) Loomi_Settings::get( 'login_slug', 'studio-access' );
-		if ( $slug === '' ) {
-			return;
-		}
-		add_rewrite_rule( '^' . preg_quote( $slug, '/' ) . '/?$', 'wp-login.php', 'top' );
-	}
+	public static function maybe_serve_login() : void {
+		$slug = trim( (string) Settings_Repository::get( 'login_slug', 'studio-access' ), '/' );
+		if ( $slug === '' ) return;
 
-	public static function gate_wp_login() : void {
-		if ( is_user_logged_in() ) {
-			return;
-		}
-
-		$action = isset( $_REQUEST['action'] ) ? sanitize_key( wp_unslash( $_REQUEST['action'] ) ) : '';
-		if ( in_array( $action, self::ALLOWED_LOGIN_ACTIONS, true ) ) {
-			return;
-		}
-
-		// POST is passed through so the login form (whose <form action> targets wp-login.php)
-		// keeps working from /studio-access/. This means the slug protects against bot GET-scans
-		// but not against targeted credential-stuffing POSTs — accepted trade-off; harden via
-		// rate-limit/2FA at the WP/host layer if that threat applies.
-		if ( ! empty( $_SERVER['REQUEST_METHOD'] ) && strtoupper( $_SERVER['REQUEST_METHOD'] ) === 'POST' ) {
-			return;
-		}
-
-		$slug         = (string) Loomi_Settings::get( 'login_slug', 'studio-access' );
 		$request_uri  = isset( $_SERVER['REQUEST_URI'] ) ? wp_unslash( $_SERVER['REQUEST_URI'] ) : '';
 		$request_path = (string) wp_parse_url( $request_uri, PHP_URL_PATH );
 		$request_path = trim( rawurldecode( $request_path ), '/' );
 
-		if ( $slug !== '' && $request_path === trim( $slug, '/' ) ) {
-			return;
-		}
+		if ( $request_path !== $slug ) return;
 
-		status_header( 404 );
-		nocache_headers();
-		wp_die( '', '', [ 'response' => 404 ] );
+		if ( ! defined( 'LOOMI_LOGIN_ROUTE' ) ) {
+			define( 'LOOMI_LOGIN_ROUTE', true );
+		}
+		require ABSPATH . 'wp-login.php';
+		exit;
 	}
 
-	public static function maybe_flush_rewrites( $old, $new ) : void {
-		$old = is_array( $old ) ? $old : [];
-		$new = is_array( $new ) ? $new : [];
-
-		$old_slug = $old['login_slug'] ?? null;
-		$new_slug = $new['login_slug'] ?? null;
-		$old_on   = ! empty( $old['login_slug_enabled'] );
-		$new_on   = ! empty( $new['login_slug_enabled'] );
-
-		if ( $old_slug !== $new_slug || $old_on !== $new_on ) {
-			flush_rewrite_rules( false );
+	/**
+	 * Bloqueia /wp-admin/ pra visitantes não autenticados retornando 404 (em vez do
+	 * 302 padrão que vazaria a slug custom no header Location).
+	 *
+	 * Disparada via add_action('init', ..., 1) — durante wp-settings.php, ANTES do
+	 * wp-admin/admin.php chamar auth_redirect().
+	 */
+	public static function gate_admin_endpoint() : void {
+		// Escape hatch via constante (admin trancado pode definir em wp-config.php).
+		if ( defined( 'LOOMI_STUDIO_DISABLE_HARDENING' ) && LOOMI_STUDIO_DISABLE_HARDENING ) {
+			return;
 		}
+		if ( ! Settings_Repository::get_bool( 'hide_admin_endpoint' ) ) {
+			return;
+		}
+		// Apenas em contexto wp-admin (WP_ADMIN constante).
+		if ( ! is_admin() ) {
+			return;
+		}
+		if ( is_user_logged_in() ) {
+			return;
+		}
+		if ( wp_doing_ajax() || wp_doing_cron() ) {
+			return;
+		}
+		if ( defined( 'REST_REQUEST' ) && REST_REQUEST ) {
+			return;
+		}
+		self::render_not_found();
+	}
+
+	public static function gate_wp_login() : void {
+		if ( defined( 'LOOMI_LOGIN_ROUTE' ) ) return;
+		if ( is_user_logged_in() ) return;
+
+		$action = isset( $_REQUEST['action'] ) ? sanitize_key( wp_unslash( $_REQUEST['action'] ) ) : '';
+		if ( in_array( $action, self::ALLOWED_LOGIN_ACTIONS, true ) ) return;
+
+		if ( ! empty( $_SERVER['REQUEST_METHOD'] ) && strtoupper( $_SERVER['REQUEST_METHOD'] ) === 'POST' ) return;
+
+		self::render_not_found();
+	}
+
+	public static function render_not_found() : void {
+		status_header( 404 );
+		nocache_headers();
+
+		global $wp_query;
+		if ( $wp_query instanceof WP_Query ) {
+			$wp_query->set_404();
+		}
+
+		// get_query_template() resolves theme hierarchy: returns the classic 404.php for
+		// classic themes OR template-canvas.php for block themes (which then renders the
+		// theme's 404 block template). Funciona pra ambos os tipos de tema.
+		$template = get_query_template( '404' );
+		if ( $template && file_exists( $template ) ) {
+			include $template;
+			exit;
+		}
+
+		// Last-resort fallback: minimal wp_die when nem template clássico nem block existe.
+		wp_die(
+			'<p>' . esc_html__( 'A página solicitada não existe neste site.', 'loomi-studio-setup' ) . '</p>',
+			esc_html__( '404 — Página não encontrada', 'loomi-studio-setup' ),
+			[ 'response' => 404 ]
+		);
+	}
+
+	public static function filter_login_url( $url, $redirect, $force_reauth ) {
+		return Login_URLs::build( '', [ 'redirect_to' => $redirect, 'reauth' => $force_reauth ? '1' : null ] );
+	}
+
+	public static function filter_logout_url( $url, $redirect ) {
+		return wp_nonce_url( Login_URLs::build( 'logout', [ 'redirect_to' => $redirect ] ), 'log-out' );
+	}
+
+	public static function filter_logout_redirect( $redirect_to, $requested, $user ) {
+		if ( empty( $redirect_to ) || strpos( (string) $redirect_to, 'wp-login.php' ) !== false ) {
+			return Login_URLs::build( '', [ 'loggedout' => 'true' ] );
+		}
+		return $redirect_to;
+	}
+
+	public static function filter_lostpassword_url( $url, $redirect ) {
+		return Login_URLs::build( 'lostpassword', [ 'redirect_to' => $redirect ] );
+	}
+
+	public static function filter_register_url( $url ) {
+		return Login_URLs::build( 'register' );
 	}
 }

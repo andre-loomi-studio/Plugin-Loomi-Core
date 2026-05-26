@@ -4,7 +4,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-class Loomi_Role {
+class Loomi_Role implements Loomi_Module {
 
 	const ROLE_SLUG = 'loomi_client';
 
@@ -16,15 +16,13 @@ class Loomi_Role {
 		'edit_files', 'unfiltered_html',
 	];
 
-	public static function init() : void {
+	public static function register() : void {
 		add_filter( 'editable_roles', [ __CLASS__, 'maybe_hide_role' ] );
 	}
 
 	public static function create() : void {
 		$editor = get_role( 'editor' );
-		if ( ! $editor ) {
-			return;
-		}
+		if ( ! $editor ) return;
 
 		$caps = $editor->capabilities;
 		foreach ( self::FORBIDDEN_CAPS as $cap ) {
@@ -35,7 +33,6 @@ class Loomi_Role {
 		if ( get_role( self::ROLE_SLUG ) ) {
 			remove_role( self::ROLE_SLUG );
 		}
-
 		add_role( self::ROLE_SLUG, __( 'Cliente Loomi', 'loomi-studio-setup' ), $caps );
 	}
 
@@ -46,14 +43,13 @@ class Loomi_Role {
 			$u->remove_role( self::ROLE_SLUG );
 			$u->add_role( 'subscriber' );
 		}
-
 		if ( get_role( self::ROLE_SLUG ) ) {
 			remove_role( self::ROLE_SLUG );
 		}
 	}
 
 	public static function maybe_hide_role( $roles ) {
-		if ( Loomi_Settings::get( 'client_role_enabled' ) ) {
+		if ( Settings_Repository::get_bool( 'client_role_enabled' ) ) {
 			return $roles;
 		}
 		if ( is_array( $roles ) && isset( $roles[ self::ROLE_SLUG ] ) ) {

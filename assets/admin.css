@@ -1,7 +1,1102 @@
-.loomi-studio-wrap .nav-tab-wrapper { margin-bottom: 1.25rem; }
+/* Loomi Studio Setup — Brand UI */
+/* All rules scoped under .loomi-studio-wrap to avoid leaking to other admin pages */
 
-.loomi-studio-form .form-table th { width: 240px; }
+/* Brand constants (não mudam com tema) */
+.loomi-studio-wrap {
+	--loomi-black: #000000;
+	--loomi-yellow: #FBD603;
+	--loomi-white: #ffffff;
+	--loomi-radius: 10px;
+	--loomi-radius-sm: 6px;
+}
 
-.loomi-logo-picker { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; max-width: 480px; }
-.loomi-logo-preview { max-width: 200px; max-height: 80px; background: #f0f0f1; padding: 6px; border: 1px solid #c3c4c7; border-radius: 4px; }
-.loomi-logo-preview[hidden] { display: none; }
+/* === Tema DARK (default + base pro auto) === */
+body.loomi-theme-dark .loomi-studio-wrap,
+body.loomi-theme-auto .loomi-studio-wrap,
+.loomi-studio-wrap {
+	--loomi-bg: #0a0a0a;
+	--loomi-bg-elevated: #131313;
+	--loomi-gray-50: #161616;
+	--loomi-gray-100: #1c1c1c;
+	--loomi-gray-200: rgba(255, 255, 255, 0.08);
+	--loomi-gray-300: rgba(255, 255, 255, 0.12);
+	--loomi-gray-500: rgba(255, 255, 255, 0.5);
+	--loomi-gray-600: rgba(255, 255, 255, 0.55);
+	--loomi-gray-700: rgba(255, 255, 255, 0.7);
+	--loomi-gray-900: var(--loomi-white);
+	--loomi-text-on-elevated: var(--loomi-white);
+	--loomi-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
+	--loomi-shadow: 0 4px 12px rgba(0, 0, 0, 0.45), 0 1px 2px rgba(0, 0, 0, 0.3);
+	--loomi-shadow-lg: 0 12px 32px rgba(0, 0, 0, 0.55);
+}
+
+/* === Tema LIGHT === */
+body.loomi-theme-light .loomi-studio-wrap {
+	--loomi-bg: #fafafa;
+	--loomi-bg-elevated: var(--loomi-white);
+	--loomi-gray-50: #f8f8f8;
+	--loomi-gray-100: #f0f0f0;
+	--loomi-gray-200: #e5e5e5;
+	--loomi-gray-300: #d4d4d4;
+	--loomi-gray-500: #737373;
+	--loomi-gray-600: #6b6b6b;
+	--loomi-gray-700: #404040;
+	--loomi-gray-900: #171717;
+	--loomi-text-on-elevated: #171717;
+	--loomi-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.04);
+	--loomi-shadow: 0 2px 8px rgba(0, 0, 0, 0.06), 0 1px 2px rgba(0, 0, 0, 0.04);
+	--loomi-shadow-lg: 0 10px 24px rgba(0, 0, 0, 0.08);
+}
+
+/* Auto mode: prefers-color-scheme light overrides */
+@media (prefers-color-scheme: light) {
+	body.loomi-theme-auto .loomi-studio-wrap {
+		--loomi-bg: #fafafa;
+		--loomi-bg-elevated: var(--loomi-white);
+		--loomi-gray-50: #f8f8f8;
+		--loomi-gray-100: #f0f0f0;
+		--loomi-gray-200: #e5e5e5;
+		--loomi-gray-300: #d4d4d4;
+		--loomi-gray-500: #737373;
+		--loomi-gray-600: #6b6b6b;
+		--loomi-gray-700: #404040;
+		--loomi-gray-900: #171717;
+		--loomi-text-on-elevated: #171717;
+		--loomi-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.04);
+		--loomi-shadow: 0 2px 8px rgba(0, 0, 0, 0.06), 0 1px 2px rgba(0, 0, 0, 0.04);
+		--loomi-shadow-lg: 0 10px 24px rgba(0, 0, 0, 0.08);
+	}
+}
+
+.loomi-studio-wrap {
+	font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+	max-width: 1100px;
+	margin: 20px auto !important;
+	color: var(--loomi-gray-900);
+}
+
+/* === Reset WP "wrap" defaults === */
+.loomi-studio-wrap.wrap {
+	margin-right: auto;
+	padding: 0;
+}
+
+.loomi-studio-wrap > h1 {
+	display: none; /* hidden but kept in DOM for accessibility */
+}
+
+/* === Header === */
+.loomi-studio-wrap .loomi-header {
+	background: var(--loomi-black);
+	color: var(--loomi-white);
+	padding: 32px 40px;
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	border-radius: var(--loomi-radius) var(--loomi-radius) 0 0;
+	position: relative;
+}
+
+.loomi-studio-wrap .loomi-header::after {
+	content: "";
+	position: absolute;
+	left: 40px;
+	right: 40px;
+	bottom: 0;
+	height: 2px;
+	background: linear-gradient(90deg, var(--loomi-yellow) 0%, var(--loomi-yellow) 60px, transparent 60px);
+}
+
+.loomi-studio-wrap .loomi-brand {
+	display: flex;
+	align-items: center;
+	gap: 20px;
+}
+
+.loomi-studio-wrap .loomi-logo {
+	height: 32px;
+	width: auto;
+	color: var(--loomi-white);
+}
+
+.loomi-studio-wrap .loomi-divider {
+	display: inline-block;
+	width: 1px;
+	height: 28px;
+	background: rgba(255, 255, 255, 0.18);
+}
+
+.loomi-studio-wrap .loomi-product {
+	font-size: 13px;
+	font-weight: 600;
+	letter-spacing: 1.4px;
+	color: var(--loomi-white);
+	text-transform: uppercase;
+}
+
+.loomi-studio-wrap .loomi-version {
+	font-size: 11px;
+	font-weight: 500;
+	color: var(--loomi-gray-300);
+	background: rgba(255, 255, 255, 0.08);
+	padding: 5px 10px;
+	border-radius: 999px;
+	font-variant-numeric: tabular-nums;
+	letter-spacing: 0.5px;
+}
+
+/* === Tabs (flat with yellow underline) === */
+.loomi-studio-wrap .nav-tab-wrapper {
+	background: var(--loomi-bg-elevated);
+	border: none;
+	border-bottom: 1px solid var(--loomi-gray-200);
+	margin: 0;
+	padding: 0 32px;
+	display: flex;
+	gap: 4px;
+	box-shadow: var(--loomi-shadow-sm);
+}
+
+.loomi-studio-wrap .nav-tab {
+	background: transparent;
+	border: none;
+	border-bottom: 2px solid transparent;
+	color: var(--loomi-gray-500);
+	font-size: 14px;
+	font-weight: 500;
+	margin: 0;
+	padding: 18px 16px 16px;
+	box-shadow: none;
+	transition: color 0.2s ease, border-color 0.2s ease;
+	letter-spacing: 0.1px;
+}
+
+.loomi-studio-wrap .nav-tab:hover,
+.loomi-studio-wrap .nav-tab:focus {
+	color: var(--loomi-gray-900);
+	background: transparent;
+	box-shadow: none;
+	outline: none;
+}
+
+.loomi-studio-wrap .nav-tab:focus-visible {
+	outline: 2px solid var(--loomi-yellow);
+	outline-offset: -2px;
+	border-radius: 4px;
+}
+
+.loomi-studio-wrap .nav-tab.nav-tab-active,
+.loomi-studio-wrap .nav-tab.nav-tab-active:hover {
+	color: var(--loomi-gray-900);
+	border-bottom-color: var(--loomi-yellow);
+	background: transparent;
+	font-weight: 600;
+}
+
+/* === Form card (content area) === */
+.loomi-studio-wrap .loomi-studio-form {
+	background: var(--loomi-white);
+	border-radius: 0 0 var(--loomi-radius) var(--loomi-radius);
+	box-shadow: var(--loomi-shadow);
+	overflow: hidden;
+}
+
+.loomi-studio-wrap .loomi-studio-tab {
+	padding: 40px 48px;
+	background: var(--loomi-bg-elevated);
+	color: var(--loomi-text-on-elevated);
+}
+
+.loomi-studio-wrap .loomi-studio-form {
+	background: var(--loomi-bg-elevated) !important;
+}
+
+.loomi-studio-wrap p.submit {
+	background: var(--loomi-bg-elevated) !important;
+	border-top-color: var(--loomi-gray-100) !important;
+}
+
+/* === Segmented control (Theme toggle) === */
+.loomi-studio-wrap .loomi-theme-toggle {
+	display: flex;
+	align-items: center;
+	gap: 16px;
+	margin-bottom: 24px;
+	padding: 12px 14px;
+	background: var(--loomi-gray-50);
+	border: 1px solid var(--loomi-gray-200);
+	border-radius: 12px;
+	max-width: 360px;
+}
+
+.loomi-studio-wrap .loomi-theme-toggle__label {
+	font-size: 12px;
+	font-weight: 700;
+	letter-spacing: 1.2px;
+	color: var(--loomi-gray-500);
+	text-transform: uppercase;
+}
+
+.loomi-studio-wrap .loomi-segmented {
+	display: inline-flex;
+	background: var(--loomi-bg-elevated);
+	border: 1px solid var(--loomi-gray-200);
+	border-radius: 8px;
+	padding: 3px;
+	gap: 2px;
+}
+
+.loomi-studio-wrap .loomi-segmented__option {
+	position: relative;
+	cursor: pointer;
+}
+
+.loomi-studio-wrap .loomi-segmented__option input[type="radio"] {
+	position: absolute;
+	opacity: 0;
+	pointer-events: none;
+	width: 0;
+	height: 0;
+	margin: 0;
+}
+
+.loomi-studio-wrap .loomi-segmented__option > span {
+	display: inline-block;
+	padding: 6px 14px;
+	font-size: 13px;
+	font-weight: 500;
+	color: var(--loomi-gray-600);
+	border-radius: 6px;
+	transition: background 0.15s ease, color 0.15s ease;
+	user-select: none;
+}
+
+.loomi-studio-wrap .loomi-segmented__option:hover > span {
+	color: var(--loomi-gray-900);
+}
+
+.loomi-studio-wrap .loomi-segmented__option.is-active > span,
+.loomi-studio-wrap .loomi-segmented__option input[type="radio"]:checked + span {
+	background: var(--loomi-yellow);
+	color: #000;
+	font-weight: 600;
+}
+
+/* === Form table redesigned === */
+.loomi-studio-wrap .form-table {
+	margin: 0;
+	border-collapse: separate;
+	border-spacing: 0;
+	font-size: 14px;
+}
+
+.loomi-studio-wrap .form-table tr {
+	display: block;
+	padding: 20px 0;
+	border-bottom: 1px solid var(--loomi-gray-100);
+}
+
+.loomi-studio-wrap .form-table tr:first-child {
+	padding-top: 0;
+}
+
+.loomi-studio-wrap .form-table tr:last-child {
+	border-bottom: none;
+	padding-bottom: 0;
+}
+
+.loomi-studio-wrap .form-table th,
+.loomi-studio-wrap .form-table td {
+	display: inline-block;
+	vertical-align: top;
+	padding: 0;
+}
+
+.loomi-studio-wrap .form-table th {
+	width: 220px;
+	font-size: 14px;
+	font-weight: 600;
+	color: var(--loomi-gray-900);
+	padding: 10px 32px 0 0;
+}
+
+/* Margin entre label do th e o conteúdo abaixo (toggle) — quando layout colapsa vertical */
+.loomi-studio-wrap .form-table tr {
+	display: flex;
+	flex-wrap: wrap;
+}
+
+.loomi-studio-wrap .form-table th {
+	flex: 0 0 220px;
+}
+
+.loomi-studio-wrap .form-table td {
+	flex: 1;
+	min-width: 0;
+}
+
+.loomi-studio-wrap .form-table td {
+	width: calc(100% - 240px);
+	font-size: 14px;
+	color: var(--loomi-gray-700);
+}
+
+.loomi-studio-wrap .form-table td label {
+	color: var(--loomi-gray-700);
+	font-size: 14px;
+	line-height: 1.5;
+}
+
+.loomi-studio-wrap .description,
+.loomi-studio-wrap .form-table td .description {
+	color: var(--loomi-gray-500);
+	font-size: 13px;
+	line-height: 1.5;
+	margin-top: 8px;
+	font-style: normal;
+}
+
+/* === Submit area === */
+.loomi-studio-wrap p.submit {
+	padding: 20px 48px;
+	margin: 0;
+	background: var(--loomi-white);
+	border-top: 1px solid var(--loomi-gray-100);
+	border-radius: 0 0 var(--loomi-radius) var(--loomi-radius);
+	display: flex;
+	justify-content: flex-end;
+	gap: 12px;
+}
+
+/* === Inputs === */
+.loomi-studio-wrap input[type="text"],
+.loomi-studio-wrap input[type="number"],
+.loomi-studio-wrap input[type="email"],
+.loomi-studio-wrap input[type="url"],
+.loomi-studio-wrap input.loomi-color-field {
+	border: 1.5px solid var(--loomi-gray-300);
+	border-radius: var(--loomi-radius-sm);
+	padding: 9px 14px;
+	box-shadow: none;
+	font-family: inherit;
+	font-size: 14px;
+	color: var(--loomi-gray-900);
+	min-height: 40px;
+	transition: border-color 0.15s ease, box-shadow 0.15s ease;
+	background: var(--loomi-gray-50);
+}
+
+.loomi-studio-wrap input[type="text"]:hover,
+.loomi-studio-wrap input[type="number"]:hover,
+.loomi-studio-wrap input[type="email"]:hover,
+.loomi-studio-wrap input[type="url"]:hover {
+	border-color: var(--loomi-gray-500);
+}
+
+.loomi-studio-wrap input[type="text"]:focus,
+.loomi-studio-wrap input[type="number"]:focus,
+.loomi-studio-wrap input[type="email"]:focus,
+.loomi-studio-wrap input[type="url"]:focus,
+.loomi-studio-wrap input.loomi-color-field:focus {
+	border-color: var(--loomi-gray-900);
+	outline: 3px solid rgba(251, 214, 3, 0.4);
+	outline-offset: 0;
+	box-shadow: none;
+}
+
+/* === Toggle switch === */
+.loomi-studio-wrap .loomi-toggle {
+	display: inline-flex;
+	align-items: center;
+	gap: 12px;
+	cursor: pointer;
+	user-select: none;
+	line-height: 1.5;
+}
+
+.loomi-studio-wrap .loomi-toggle input[type="checkbox"] {
+	position: absolute;
+	opacity: 0;
+	pointer-events: none;
+	width: 0;
+	height: 0;
+	margin: 0;
+}
+
+.loomi-studio-wrap .loomi-toggle-track {
+	display: inline-block;
+	position: relative;
+	width: 44px;
+	height: 24px;
+	background: var(--loomi-gray-300);
+	border-radius: 999px;
+	transition: background 0.2s ease;
+	flex-shrink: 0;
+}
+
+.loomi-studio-wrap .loomi-toggle-thumb {
+	position: absolute;
+	top: 2px;
+	left: 2px;
+	width: 20px;
+	height: 20px;
+	background: var(--loomi-white);
+	border-radius: 50%;
+	box-shadow: 0 1px 3px rgba(0, 0, 0, 0.18);
+	transition: transform 0.2s ease, background 0.2s ease;
+}
+
+.loomi-studio-wrap .loomi-toggle:hover .loomi-toggle-track {
+	background: var(--loomi-gray-500);
+}
+
+.loomi-studio-wrap .loomi-toggle input:checked + .loomi-toggle-track {
+	background: var(--loomi-black);
+}
+
+.loomi-studio-wrap .loomi-toggle input:checked + .loomi-toggle-track .loomi-toggle-thumb {
+	transform: translateX(20px);
+	background: var(--loomi-yellow);
+}
+
+.loomi-studio-wrap .loomi-toggle input:focus-visible + .loomi-toggle-track {
+	outline: 3px solid rgba(251, 214, 3, 0.5);
+	outline-offset: 2px;
+}
+
+.loomi-studio-wrap .loomi-toggle-label {
+	color: var(--loomi-gray-900);
+	font-size: 14px;
+}
+
+.loomi-studio-wrap .loomi-toggle-desc {
+	color: var(--loomi-gray-500);
+	font-weight: 400;
+}
+
+.loomi-studio-wrap .loomi-toggle-stack > .loomi-toggle {
+	display: flex;
+	align-items: center;
+	margin-bottom: 14px;
+}
+
+.loomi-studio-wrap .loomi-toggle-stack > .loomi-toggle:last-child {
+	margin-bottom: 0;
+}
+
+.loomi-studio-wrap .loomi-empty-state {
+	color: var(--loomi-gray-500);
+	font-style: italic;
+	font-size: 13px;
+	margin: 4px 0 0;
+}
+
+/* === Checkboxes (for multi-select lists like hidden_menus) === */
+.loomi-studio-wrap input[type="checkbox"]:not(.loomi-toggle input) {
+	appearance: none;
+	-webkit-appearance: none;
+	width: 18px;
+	height: 18px;
+	border: 2px solid var(--loomi-gray-300);
+	border-radius: 4px;
+	background: var(--loomi-gray-50);
+	vertical-align: middle;
+	cursor: pointer;
+	position: relative;
+	margin: 0 10px 0 0;
+	transition: background 0.15s ease, border-color 0.15s ease;
+	flex-shrink: 0;
+}
+
+.loomi-studio-wrap input[type="checkbox"]:not(.loomi-toggle input):hover {
+	border-color: var(--loomi-gray-900);
+}
+
+.loomi-studio-wrap input[type="checkbox"]:not(.loomi-toggle input):checked {
+	background: var(--loomi-yellow);
+	border-color: var(--loomi-black);
+}
+
+.loomi-studio-wrap input[type="checkbox"]:not(.loomi-toggle input):checked::after {
+	content: "";
+	position: absolute;
+	left: 4px;
+	top: 0;
+	width: 5px;
+	height: 10px;
+	border: solid var(--loomi-black);
+	border-width: 0 2.5px 2.5px 0;
+	transform: rotate(45deg);
+}
+
+.loomi-studio-wrap input[type="checkbox"]:not(.loomi-toggle input):focus,
+.loomi-studio-wrap input[type="checkbox"]:not(.loomi-toggle input):focus-visible {
+	outline: 3px solid rgba(251, 214, 3, 0.4);
+	outline-offset: 1px;
+}
+
+/* === Primary button === */
+.loomi-studio-wrap .button-primary,
+.loomi-studio-wrap p.submit .button-primary {
+	background: var(--loomi-black);
+	border: none;
+	color: var(--loomi-white);
+	box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+	text-shadow: none;
+	padding: 12px 32px;
+	border-radius: var(--loomi-radius-sm);
+	font-weight: 600;
+	font-size: 14px;
+	letter-spacing: 0.2px;
+	min-height: auto;
+	line-height: 1.4;
+	transition: background 0.2s ease, color 0.2s ease, transform 0.1s ease;
+	cursor: pointer;
+}
+
+.loomi-studio-wrap .button-primary:hover {
+	background: var(--loomi-yellow);
+	color: var(--loomi-black);
+	box-shadow: 0 4px 12px rgba(251, 214, 3, 0.35);
+	transform: translateY(-1px);
+}
+
+.loomi-studio-wrap .button-primary:active {
+	transform: translateY(0);
+}
+
+.loomi-studio-wrap .button-primary:focus {
+	background: var(--loomi-yellow);
+	color: var(--loomi-black);
+	outline: 3px solid rgba(0, 0, 0, 0.15);
+	outline-offset: 2px;
+}
+
+/* === Secondary buttons === */
+.loomi-studio-wrap .button:not(.button-primary):not(.wp-color-result) {
+	border: 1.5px solid var(--loomi-gray-300);
+	background: var(--loomi-bg-elevated);
+	color: var(--loomi-gray-900);
+	border-radius: var(--loomi-radius-sm);
+	box-shadow: none;
+	padding: 8px 16px;
+	font-weight: 500;
+	font-size: 13px;
+	min-height: 38px;
+	transition: border-color 0.15s ease, background 0.15s ease, color 0.15s ease;
+	cursor: pointer;
+}
+
+.loomi-studio-wrap .button:not(.button-primary):not(.wp-color-result):hover {
+	border-color: var(--loomi-gray-900);
+	background: var(--loomi-gray-50);
+	color: var(--loomi-gray-900);
+}
+
+.loomi-studio-wrap .button:not(.button-primary):not(.wp-color-result):focus {
+	outline: 3px solid rgba(251, 214, 3, 0.4);
+	outline-offset: 1px;
+}
+
+/* === Notices === */
+.loomi-studio-wrap .notice {
+	border-left-width: 3px;
+	background: var(--loomi-gray-50);
+	box-shadow: none;
+	margin: 0 0 20px;
+	padding: 14px 18px;
+	border-radius: 0 var(--loomi-radius-sm) var(--loomi-radius-sm) 0;
+	font-size: 13px;
+	color: var(--loomi-gray-700);
+}
+
+.loomi-studio-wrap .notice p {
+	margin: 0;
+	font-size: 13px;
+	line-height: 1.5;
+}
+
+.loomi-studio-wrap .notice-info,
+.loomi-studio-wrap .notice.notice-info.inline {
+	border-left-color: var(--loomi-yellow);
+}
+
+/* notice-error e notice-success mantêm cor semântica WP */
+
+/* === Logo picker (Custom Login tab) === */
+.loomi-studio-wrap .loomi-logo-picker {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+	flex-wrap: wrap;
+	max-width: 540px;
+}
+
+.loomi-studio-wrap .loomi-logo-preview {
+	max-width: 180px;
+	max-height: 64px;
+	background: var(--loomi-gray-50);
+	padding: 8px;
+	border: 1.5px solid var(--loomi-gray-200);
+	border-radius: var(--loomi-radius-sm);
+}
+
+.loomi-studio-wrap .loomi-logo-preview[hidden] {
+	display: none;
+}
+
+/* === Apply brand preset button === */
+.loomi-studio-wrap #loomi-apply-brand {
+	margin-left: 8px;
+}
+
+/* === Fieldsets dentro de tabs === */
+.loomi-studio-wrap fieldset {
+	border: none;
+	padding: 0;
+	margin: 0;
+}
+
+.loomi-studio-wrap fieldset legend {
+	font-size: 12px;
+	font-weight: 700;
+	color: var(--loomi-gray-500);
+	letter-spacing: 1.2px;
+	text-transform: uppercase;
+	padding: 0;
+	margin: 0 0 12px;
+}
+
+.loomi-studio-wrap fieldset + fieldset {
+	margin-top: 24px;
+	padding-top: 24px;
+	border-top: 1px solid var(--loomi-gray-100);
+}
+
+/* === wp-color-picker integration === */
+.loomi-studio-wrap .wp-picker-container {
+	display: inline-flex;
+	align-items: center;
+	gap: 16px;
+	vertical-align: middle;
+}
+
+.loomi-studio-wrap .wp-color-result {
+	width: 40px !important;
+	min-width: 40px !important;
+	height: 40px !important;
+	min-height: 40px !important;
+	padding: 0 !important;
+	margin: 0 !important;
+	border: 1.5px solid var(--loomi-gray-300) !important;
+	border-radius: var(--loomi-radius-sm) !important;
+	box-shadow: none !important;
+}
+
+/* Esconde o "Select Color" label que parece botão */
+.loomi-studio-wrap .wp-color-result .wp-color-result-text {
+	display: none !important;
+}
+
+.loomi-studio-wrap .wp-color-result::after {
+	content: "" !important;
+	display: none !important;
+}
+
+/* Botão "Aplicar branding Loomi" — gap claro do picker */
+.loomi-studio-wrap #loomi-apply-brand {
+	margin-left: 12px;
+}
+
+/* === Code blocks === */
+.loomi-studio-wrap code {
+	background: var(--loomi-gray-100);
+	color: var(--loomi-gray-900);
+	padding: 2px 6px;
+	border-radius: 4px;
+	font-size: 12px;
+	font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+}
+
+/* === Hidden menus checkboxes — better grid === */
+.loomi-studio-wrap .form-table td > label {
+	display: flex;
+	align-items: center;
+	margin-bottom: 10px;
+	color: var(--loomi-gray-900);
+}
+
+.loomi-studio-wrap .form-table td > label:last-child {
+	margin-bottom: 0;
+}
+
+/* === Dashboard tab === */
+.loomi-studio-wrap .loomi-dashboard {
+	margin: -8px 0 0;
+}
+
+.loomi-studio-wrap .loomi-welcome {
+	margin-bottom: 36px;
+}
+
+.loomi-studio-wrap .loomi-welcome-title {
+	font-size: 24px;
+	font-weight: 700;
+	color: var(--loomi-gray-900);
+	margin: 0 0 8px;
+	letter-spacing: -0.4px;
+}
+
+.loomi-studio-wrap .loomi-welcome-text {
+	font-size: 14px;
+	color: var(--loomi-gray-500);
+	max-width: 720px;
+	line-height: 1.6;
+	margin: 0;
+}
+
+.loomi-studio-wrap .loomi-section-title {
+	font-size: 11px;
+	font-weight: 700;
+	color: var(--loomi-gray-500);
+	letter-spacing: 1.4px;
+	text-transform: uppercase;
+	margin: 32px 0 16px;
+}
+
+.loomi-studio-wrap .loomi-status-grid {
+	display: grid;
+	grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+	gap: 12px;
+}
+
+.loomi-studio-wrap .loomi-status-card {
+	display: block;
+	padding: 18px 20px;
+	background: var(--loomi-bg-elevated);
+	border: 1.5px solid var(--loomi-gray-200);
+	border-radius: var(--loomi-radius);
+	text-decoration: none;
+	color: var(--loomi-gray-900);
+	transition: border-color 0.15s ease, transform 0.15s ease, box-shadow 0.15s ease;
+	cursor: pointer;
+	position: relative;
+}
+
+.loomi-studio-wrap .loomi-status-card:hover {
+	border-color: var(--loomi-gray-900);
+	transform: translateY(-2px);
+	box-shadow: var(--loomi-shadow);
+}
+
+.loomi-studio-wrap .loomi-status-card:focus-visible {
+	outline: 3px solid rgba(251, 214, 3, 0.5);
+	outline-offset: 2px;
+}
+
+.loomi-studio-wrap .loomi-status-card__head {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	margin-bottom: 12px;
+}
+
+.loomi-studio-wrap .loomi-status-card__icon {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 40px;
+	height: 40px;
+	border-radius: 10px;
+	background: var(--loomi-gray-100);
+	color: var(--loomi-gray-700);
+	transition: background 0.2s ease, color 0.2s ease;
+}
+
+.loomi-studio-wrap .loomi-status-card--on .loomi-status-card__icon {
+	background: var(--loomi-black);
+	color: var(--loomi-yellow);
+}
+
+.loomi-studio-wrap .loomi-status-card:hover .loomi-status-card__icon {
+	transform: scale(1.05);
+}
+
+.loomi-studio-wrap .loomi-status-card__badge {
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+	font-size: 11px;
+	font-weight: 600;
+	color: var(--loomi-gray-500);
+	text-transform: uppercase;
+	letter-spacing: 0.6px;
+}
+
+.loomi-studio-wrap .loomi-status-card--on .loomi-status-card__badge {
+	color: var(--loomi-gray-900);
+}
+
+.loomi-studio-wrap .loomi-dot {
+	width: 8px;
+	height: 8px;
+	border-radius: 50%;
+	display: inline-block;
+}
+
+.loomi-studio-wrap .loomi-dot--on {
+	background: var(--loomi-yellow);
+	box-shadow: 0 0 0 3px rgba(251, 214, 3, 0.18);
+}
+
+.loomi-studio-wrap .loomi-dot--off {
+	background: var(--loomi-gray-300);
+}
+
+.loomi-studio-wrap .loomi-status-card__name {
+	font-size: 15px;
+	font-weight: 600;
+	color: var(--loomi-gray-900);
+	margin: 0 0 4px;
+}
+
+.loomi-studio-wrap .loomi-status-card__desc {
+	font-size: 13px;
+	color: var(--loomi-gray-500);
+	margin: 0;
+	line-height: 1.5;
+}
+
+/* Deps */
+.loomi-studio-wrap .loomi-deps {
+	display: grid;
+	grid-template-columns: 1fr 1fr;
+	gap: 12px;
+}
+
+.loomi-studio-wrap .loomi-deps--single {
+	grid-template-columns: 1fr;
+}
+
+.loomi-studio-wrap .loomi-dep {
+	padding: 18px 20px;
+	background: var(--loomi-gray-50);
+	border: 1px solid var(--loomi-gray-200);
+	border-radius: var(--loomi-radius);
+}
+
+.loomi-studio-wrap .loomi-dep__head {
+	display: flex;
+	align-items: center;
+	margin-bottom: 8px;
+	gap: 10px;
+}
+
+.loomi-studio-wrap .loomi-dep__head strong {
+	flex: 1;
+	font-size: 14px;
+	color: var(--loomi-gray-900);
+}
+
+.loomi-studio-wrap .loomi-dep__icon {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 32px;
+	height: 32px;
+	border-radius: 8px;
+	background: var(--loomi-bg-elevated);
+	border: 1px solid var(--loomi-gray-200);
+	color: var(--loomi-gray-700);
+	flex-shrink: 0;
+}
+
+.loomi-studio-wrap .loomi-dep__desc {
+	font-size: 13px;
+	color: var(--loomi-gray-500);
+	margin: 0;
+	line-height: 1.5;
+}
+
+.loomi-studio-wrap .loomi-dep__actions {
+	margin-top: 12px;
+	display: flex;
+	gap: 8px;
+}
+
+.loomi-studio-wrap .loomi-dep__action.button.button-small {
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+	min-height: 32px;
+	padding: 6px 12px;
+	font-size: 12px;
+	font-weight: 600;
+	text-decoration: none;
+}
+
+.loomi-studio-wrap .loomi-dep__action svg {
+	flex-shrink: 0;
+}
+
+.loomi-studio-wrap .loomi-pill {
+	display: inline-flex;
+	align-items: center;
+	gap: 4px;
+	font-size: 11px;
+	font-weight: 600;
+	padding: 4px 10px;
+	border-radius: 999px;
+	letter-spacing: 0.3px;
+}
+
+.loomi-studio-wrap .loomi-pill svg {
+	stroke-width: 2.5;
+}
+
+.loomi-studio-wrap .loomi-pill--on {
+	background: var(--loomi-yellow);
+	color: var(--loomi-black);
+}
+
+.loomi-studio-wrap .loomi-pill--warn {
+	background: #fff3cd;
+	color: #664d03;
+}
+
+.loomi-studio-wrap .loomi-pill--off {
+	background: var(--loomi-gray-200);
+	color: var(--loomi-gray-700);
+}
+
+/* Support */
+.loomi-studio-wrap .loomi-support {
+	margin-top: 32px;
+	padding: 28px;
+	background: var(--loomi-black);
+	color: var(--loomi-white);
+	border-radius: var(--loomi-radius);
+	position: relative;
+	overflow: hidden;
+}
+
+.loomi-studio-wrap .loomi-support::before {
+	content: "";
+	position: absolute;
+	top: -50px;
+	right: -50px;
+	width: 200px;
+	height: 200px;
+	background: radial-gradient(circle, var(--loomi-yellow) 0%, transparent 70%);
+	opacity: 0.15;
+	pointer-events: none;
+}
+
+.loomi-studio-wrap .loomi-support__inner {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 24px;
+	flex-wrap: wrap;
+	position: relative;
+}
+
+.loomi-studio-wrap .loomi-support__title {
+	font-size: 18px;
+	font-weight: 700;
+	color: var(--loomi-white);
+	margin: 0 0 6px;
+}
+
+.loomi-studio-wrap .loomi-support__text {
+	font-size: 14px;
+	color: rgba(255, 255, 255, 0.7);
+	margin: 0;
+	line-height: 1.5;
+}
+
+.loomi-studio-wrap .loomi-support__actions {
+	display: flex;
+	gap: 10px;
+	flex-wrap: wrap;
+}
+
+.loomi-studio-wrap .loomi-support__btn {
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+	padding: 10px 16px;
+	background: var(--loomi-yellow);
+	color: var(--loomi-black);
+	font-size: 13px;
+	font-weight: 600;
+	text-decoration: none;
+	border-radius: var(--loomi-radius-sm);
+	transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.loomi-studio-wrap .loomi-support__btn:hover {
+	transform: translateY(-1px);
+	box-shadow: 0 4px 12px rgba(251, 214, 3, 0.4);
+	color: var(--loomi-black);
+}
+
+.loomi-studio-wrap .loomi-support__btn--ghost {
+	background: transparent;
+	color: var(--loomi-white);
+	border: 1.5px solid rgba(255, 255, 255, 0.25);
+}
+
+.loomi-studio-wrap .loomi-support__btn--ghost:hover {
+	border-color: var(--loomi-yellow);
+	color: var(--loomi-yellow);
+	box-shadow: none;
+}
+
+/* Footer meta */
+.loomi-studio-wrap .loomi-footer-meta {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	margin-top: 24px;
+	padding-top: 20px;
+	border-top: 1px solid var(--loomi-gray-100);
+	font-size: 12px;
+	color: var(--loomi-gray-500);
+	font-variant-numeric: tabular-nums;
+}
+
+/* Esconde submit button quando dashboard ativo */
+.loomi-studio-wrap.loomi-tab-dashboard p.submit {
+	display: none;
+}
+
+/* Responsive: stack labels above inputs on narrow screens */
+@media (max-width: 782px) {
+	.loomi-studio-wrap .form-table th,
+	.loomi-studio-wrap .form-table td {
+		display: block;
+		width: 100%;
+	}
+
+	.loomi-studio-wrap .form-table th {
+		padding-bottom: 8px;
+	}
+
+	.loomi-studio-wrap .loomi-header {
+		padding: 24px;
+	}
+
+	.loomi-studio-wrap .nav-tab-wrapper {
+		padding: 0 16px;
+		overflow-x: auto;
+	}
+
+	.loomi-studio-wrap .loomi-studio-tab {
+		padding: 24px;
+	}
+
+	.loomi-studio-wrap p.submit {
+		padding: 20px 24px;
+	}
+}

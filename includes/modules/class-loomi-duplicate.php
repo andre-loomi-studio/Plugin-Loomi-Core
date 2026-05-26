@@ -4,11 +4,11 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-class Loomi_Duplicate {
+class Loomi_Duplicate implements Loomi_Module {
 
 	const ACTION = 'loomi_duplicate_post';
 
-	public static function init() : void {
+	public static function register() : void {
 		add_filter( 'post_row_actions', [ __CLASS__, 'add_action_link' ], 10, 2 );
 		add_filter( 'page_row_actions', [ __CLASS__, 'add_action_link' ], 10, 2 );
 		add_action( 'admin_action_' . self::ACTION, [ __CLASS__, 'handle' ] );
@@ -16,15 +16,9 @@ class Loomi_Duplicate {
 	}
 
 	public static function add_action_link( $actions, $post ) {
-		if ( ! $post instanceof WP_Post ) {
-			return $actions;
-		}
-		if ( ! current_user_can( 'edit_post', $post->ID ) ) {
-			return $actions;
-		}
-		if ( ! in_array( $post->post_type, [ 'post', 'page' ], true ) ) {
-			return $actions;
-		}
+		if ( ! $post instanceof WP_Post ) return $actions;
+		if ( ! current_user_can( 'edit_post', $post->ID ) ) return $actions;
+		if ( ! in_array( $post->post_type, [ 'post', 'page' ], true ) ) return $actions;
 
 		$url = wp_nonce_url(
 			admin_url( 'admin.php?action=' . self::ACTION . '&post=' . $post->ID ),
@@ -38,7 +32,6 @@ class Loomi_Duplicate {
 			esc_attr( sprintf( __( 'Duplicar "%s"', 'loomi-studio-setup' ), $post->post_title ) ),
 			esc_html__( 'Duplicar', 'loomi-studio-setup' )
 		);
-
 		return $actions;
 	}
 
@@ -47,9 +40,7 @@ class Loomi_Duplicate {
 		if ( ! $source_id ) {
 			wp_die( esc_html__( 'Post inválido.', 'loomi-studio-setup' ) );
 		}
-
 		check_admin_referer( self::ACTION . '_' . $source_id );
-
 		if ( ! current_user_can( 'edit_post', $source_id ) ) {
 			wp_die( esc_html__( 'Permissão negada.', 'loomi-studio-setup' ) );
 		}
@@ -81,41 +72,29 @@ class Loomi_Duplicate {
 
 		$redirect = add_query_arg(
 			[
-				'post_type'         => $source->post_type === 'post' ? false : $source->post_type,
-				'loomi_duplicated'  => 1,
+				'post_type'        => $source->post_type === 'post' ? false : $source->post_type,
+				'loomi_duplicated' => 1,
 			],
 			admin_url( 'edit.php' )
 		);
-
 		wp_safe_redirect( $redirect );
 		exit;
 	}
 
 	private static function copy_meta( int $source_id, int $new_id ) : void {
 		global $wpdb;
-		$rows = $wpdb->get_results(
-			$wpdb->prepare(
-				"SELECT meta_key, meta_value FROM {$wpdb->postmeta} WHERE post_id = %d",
-				$source_id
-			)
-		);
-		if ( ! $rows ) {
-			return;
-		}
+		$rows = $wpdb->get_results( $wpdb->prepare(
+			"SELECT meta_key, meta_value FROM {$wpdb->postmeta} WHERE post_id = %d",
+			$source_id
+		) );
+		if ( ! $rows ) return;
 		foreach ( $rows as $row ) {
-			if ( $row->meta_key === '_edit_lock' || $row->meta_key === '_edit_last' ) {
-				continue;
-			}
-			// Pass raw serialized string; WP slashes/unserializes on read. Avoids object instantiation
-			// (POP-chain injection vector) that maybe_unserialize() would trigger here.
-			$wpdb->insert(
-				$wpdb->postmeta,
-				[
-					'post_id'    => $new_id,
-					'meta_key'   => $row->meta_key,
-					'meta_value' => $row->meta_value,
-				]
-			);
+			if ( $row->meta_key === '_edit_lock' || $row->meta_key === '_edit_last' ) continue;
+			$wpdb->insert( $wpdb->postmeta, [
+				'post_id'    => $new_id,
+				'meta_key'   => $row->meta_key,
+				'meta_value' => $row->meta_value,
+			] );
 		}
 	}
 
@@ -123,17 +102,13 @@ class Loomi_Duplicate {
 		$taxes = get_object_taxonomies( $source->post_type );
 		foreach ( $taxes as $tax ) {
 			$terms = wp_get_object_terms( $source->ID, $tax, [ 'fields' => 'ids' ] );
-			if ( is_wp_error( $terms ) || empty( $terms ) ) {
-				continue;
-			}
+			if ( is_wp_error( $terms ) || empty( $terms ) ) continue;
 			wp_set_object_terms( $new_id, array_map( 'intval', $terms ), $tax );
 		}
 	}
 
 	public static function maybe_render_notice() : void {
-		if ( empty( $_GET['loomi_duplicated'] ) ) {
-			return;
-		}
+		if ( empty( $_GET['loomi_duplicated'] ) ) return;
 		echo '<div class="notice notice-success is-dismissible"><p>' . esc_html__( 'Item duplicado com sucesso.', 'loomi-studio-setup' ) . '</p></div>';
 	}
 }

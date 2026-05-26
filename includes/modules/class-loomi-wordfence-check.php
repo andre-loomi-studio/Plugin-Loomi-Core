@@ -4,13 +4,15 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-class Loomi_Wordfence_Check {
+class Loomi_Wordfence_Check implements Loomi_Module {
 
-	const WORDFENCE_PLUGIN_FILE = 'wordfence/wordfence.php';
-	const ACTION                = 'loomi_install_wordfence';
-	const NONCE_ACTION          = 'loomi_install_wordfence';
+	const ACTION       = 'loomi_install_wordfence';
+	const NONCE_ACTION = 'loomi_install_wordfence';
 
-	public static function init() : void {
+	public static function register() : void {
+		if ( ! is_admin() ) {
+			return;
+		}
 		add_action( 'admin_notices', [ __CLASS__, 'render_notice' ] );
 		add_action( 'admin_post_' . self::ACTION, [ __CLASS__, 'handle_install' ] );
 	}
@@ -19,33 +21,31 @@ class Loomi_Wordfence_Check {
 		if ( ! function_exists( 'is_plugin_active' ) ) {
 			require_once ABSPATH . 'wp-admin/includes/plugin.php';
 		}
-
-		if ( is_plugin_active( self::WORDFENCE_PLUGIN_FILE ) ) {
+		if ( is_plugin_active( Plugin::WORDFENCE_FILE ) ) {
 			return 'active';
 		}
-
-		if ( file_exists( WP_PLUGIN_DIR . '/' . self::WORDFENCE_PLUGIN_FILE ) ) {
+		if ( file_exists( WP_PLUGIN_DIR . '/' . Plugin::WORDFENCE_FILE ) ) {
 			return 'installed_inactive';
 		}
-
 		return 'absent';
 	}
 
 	public static function render_notice() : void {
 		self::render_status_notice();
 
-		if ( ! current_user_can( 'activate_plugins' ) ) {
+		if ( ! current_user_can( 'activate_plugins' ) ) return;
+
+		// Não renderizar no Dashboard (index.php) — tela hero Loomi não deve ter notice WP por cima.
+		$screen = function_exists( 'get_current_screen' ) ? get_current_screen() : null;
+		if ( $screen && in_array( $screen->base, [ 'dashboard', 'dashboard-network' ], true ) ) {
 			return;
 		}
 
 		$state = self::get_state();
-		if ( $state === 'active' ) {
-			return;
-		}
+		if ( $state === 'active' ) return;
 
-		$can_install  = current_user_can( 'install_plugins' );
-		$nonce_field  = wp_nonce_field( self::NONCE_ACTION, '_wpnonce', true, false );
-		$action_url   = esc_url( admin_url( 'admin-post.php' ) );
+		$can_install = current_user_can( 'install_plugins' );
+		$action_url  = esc_url( admin_url( 'admin-post.php' ) );
 
 		if ( $state === 'absent' ) {
 			$headline = esc_html__( 'Wordfence não está instalado.', 'loomi-studio-setup' );
@@ -64,35 +64,28 @@ class Loomi_Wordfence_Check {
 		if ( $button !== '' ) {
 			echo '<p><form action="' . $action_url . '" method="post" style="display:inline;">';
 			echo '<input type="hidden" name="action" value="' . esc_attr( self::ACTION ) . '" />';
-			echo $nonce_field; // phpcs:ignore WordPress.Security.EscapeOutput
+			echo wp_nonce_field( self::NONCE_ACTION, '_wpnonce', true, false ); // phpcs:ignore WordPress.Security.EscapeOutput
 			echo '<button type="submit" class="button button-primary">' . $button . '</button>';
 			echo '</form></p>';
 		} elseif ( $fallback !== '' ) {
 			echo '<p><em>' . $fallback . '</em></p>';
 		}
-
 		echo '</div>';
 	}
 
 	private static function render_status_notice() : void {
-		if ( empty( $_GET['loomi_wf_status'] ) ) {
-			return;
-		}
+		if ( empty( $_GET['loomi_wf_status'] ) ) return;
 		$status = sanitize_key( wp_unslash( $_GET['loomi_wf_status'] ) );
 
 		if ( $status === 'ok' || $status === 'activated' ) {
-			echo '<div class="notice notice-success is-dismissible"><p>'
-				. esc_html__( 'Wordfence ativo. Obrigado!', 'loomi-studio-setup' )
-				. '</p></div>';
+			echo '<div class="notice notice-success is-dismissible"><p>' . esc_html__( 'Wordfence ativo. Obrigado!', 'loomi-studio-setup' ) . '</p></div>';
 			return;
 		}
-
 		if ( $status === 'error' ) {
 			$msg = isset( $_GET['loomi_wf_msg'] ) ? sanitize_text_field( wp_unslash( $_GET['loomi_wf_msg'] ) ) : __( 'Erro desconhecido.', 'loomi-studio-setup' );
 			echo '<div class="notice notice-error is-dismissible"><p>'
 				. esc_html__( 'Falha ao instalar/ativar Wordfence:', 'loomi-studio-setup' ) . ' '
-				. esc_html( $msg )
-				. '</p></div>';
+				. esc_html( $msg ) . '</p></div>';
 		}
 	}
 
@@ -105,11 +98,7 @@ class Loomi_Wordfence_Check {
 
 		$required_cap = $state === 'absent' ? 'install_plugins' : 'activate_plugins';
 		if ( ! current_user_can( $required_cap ) ) {
-			wp_die(
-				esc_html__( 'Permissão negada.', 'loomi-studio-setup' ),
-				'',
-				[ 'response' => 403 ]
-			);
+			wp_die( esc_html__( 'Permissão negada.', 'loomi-studio-setup' ), '', [ 'response' => 403 ] );
 		}
 
 		if ( $state === 'absent' ) {
@@ -120,7 +109,7 @@ class Loomi_Wordfence_Check {
 			}
 		}
 
-		$activated = activate_plugin( self::WORDFENCE_PLUGIN_FILE, '', false, true );
+		$activated = activate_plugin( Plugin::WORDFENCE_FILE, '', false, true );
 		if ( is_wp_error( $activated ) ) {
 			self::redirect_with_status( $redirect, 'error', $activated->get_error_message() );
 			return;
@@ -137,18 +126,11 @@ class Loomi_Wordfence_Check {
 		require_once ABSPATH . 'wp-admin/includes/misc.php';
 		require_once ABSPATH . 'wp-admin/includes/class-wp-upgrader.php';
 
-		$api = plugins_api(
-			'plugin_information',
-			[
-				'slug'   => 'wordfence',
-				'fields' => [ 'sections' => false ],
-			]
-		);
-
-		if ( is_wp_error( $api ) ) {
-			return $api;
-		}
-
+		$api = plugins_api( 'plugin_information', [
+			'slug'   => 'wordfence',
+			'fields' => [ 'sections' => false ],
+		] );
+		if ( is_wp_error( $api ) ) return $api;
 		if ( empty( $api->download_link ) ) {
 			return new WP_Error( 'loomi_no_download_link', __( 'wp.org não retornou link de download.', 'loomi-studio-setup' ) );
 		}
@@ -157,20 +139,14 @@ class Loomi_Wordfence_Check {
 		$upgrader = new Plugin_Upgrader( $skin );
 		$result   = $upgrader->install( $api->download_link );
 
-		if ( is_wp_error( $result ) ) {
-			return $result;
-		}
-		if ( is_wp_error( $skin->result ) ) {
-			return $skin->result;
-		}
+		if ( is_wp_error( $result ) ) return $result;
+		if ( is_wp_error( $skin->result ) ) return $skin->result;
 		if ( $result === false ) {
 			$errors = $skin->get_errors();
-			if ( $errors && $errors->has_errors() ) {
-				return $errors;
-			}
-			return new WP_Error( 'loomi_install_failed', __( 'Falha na instalação (sem detalhes).', 'loomi-studio-setup' ) );
+			return ( $errors && $errors->has_errors() )
+				? $errors
+				: new WP_Error( 'loomi_install_failed', __( 'Falha na instalação.', 'loomi-studio-setup' ) );
 		}
-
 		return true;
 	}
 

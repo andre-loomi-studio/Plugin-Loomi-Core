@@ -4,7 +4,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-class Loomi_SVG {
+class Loomi_SVG implements Loomi_Module {
 
 	const ALLOWED_TAGS = [
 		'svg', 'g', 'path', 'rect', 'circle', 'ellipse', 'line', 'polyline', 'polygon',
@@ -25,7 +25,7 @@ class Loomi_SVG {
 		'values', 'type', 'orient', 'markerWidth', 'markerHeight', 'refX', 'refY',
 	];
 
-	public static function init() : void {
+	public static function register() : void {
 		add_filter( 'upload_mimes', [ __CLASS__, 'allow_svg_mime' ], 99 );
 		add_filter( 'wp_check_filetype_and_ext', [ __CLASS__, 'check_filetype' ], 10, 4 );
 		add_filter( 'wp_handle_upload_prefilter', [ __CLASS__, 'sanitize_on_upload' ] );
@@ -45,17 +45,13 @@ class Loomi_SVG {
 		if ( ! empty( $data['ext'] ) && ! empty( $data['type'] ) ) {
 			return $data;
 		}
-
 		$wp_filetype = wp_check_filetype( $filename, $mimes );
 		$ext         = $wp_filetype['ext'] ?? '';
-		$type        = $wp_filetype['type'] ?? '';
-
 		if ( in_array( strtolower( $ext ), [ 'svg', 'svgz' ], true ) ) {
 			$data['ext']             = $ext;
 			$data['type']            = 'image/svg+xml';
 			$data['proper_filename'] = $filename;
 		}
-
 		return $data;
 	}
 
@@ -63,29 +59,23 @@ class Loomi_SVG {
 		if ( empty( $file['tmp_name'] ) || empty( $file['name'] ) ) {
 			return $file;
 		}
-
 		$ext = strtolower( pathinfo( $file['name'], PATHINFO_EXTENSION ) );
 		if ( $ext !== 'svg' ) {
 			return $file;
 		}
-
 		$contents = @file_get_contents( $file['tmp_name'] );
 		if ( $contents === false || $contents === '' ) {
 			$file['error'] = __( 'Não foi possível ler o arquivo SVG.', 'loomi-studio-setup' );
 			return $file;
 		}
-
 		$sanitized = self::sanitize( $contents );
 		if ( $sanitized === null ) {
 			$file['error'] = __( 'Arquivo SVG inválido ou malformado.', 'loomi-studio-setup' );
 			return $file;
 		}
-
-		$written = @file_put_contents( $file['tmp_name'], $sanitized );
-		if ( $written === false ) {
+		if ( @file_put_contents( $file['tmp_name'], $sanitized ) === false ) {
 			$file['error'] = __( 'Não foi possível salvar o SVG sanitizado.', 'loomi-studio-setup' );
 		}
-
 		return $file;
 	}
 
@@ -101,7 +91,6 @@ class Loomi_SVG {
 		$dom->preserveWhiteSpace = false;
 		$dom->formatOutput       = false;
 
-		// NOTE: explicitly NO LIBXML_NOENT — keeps entity substitution off (XXE / billion-laughs safe).
 		$loaded = $dom->loadXML( $svg, LIBXML_NONET );
 		libxml_clear_errors();
 
@@ -109,7 +98,6 @@ class Loomi_SVG {
 			return null;
 		}
 
-		// Remove DOCTYPE node entirely (defense vs internal-subset entity declarations).
 		foreach ( iterator_to_array( $dom->childNodes ) as $child ) {
 			if ( $child->nodeType === XML_DOCUMENT_TYPE_NODE ) {
 				$dom->removeChild( $child );
@@ -122,13 +110,11 @@ class Loomi_SVG {
 		}
 
 		self::scrub_node( $root );
-
 		return $dom->saveXML();
 	}
 
 	private static function scrub_node( DOMElement $node ) : void {
 		$tag = strtolower( $node->nodeName );
-
 		if ( ! in_array( $tag, self::ALLOWED_TAGS, true ) ) {
 			$node->parentNode->removeChild( $node );
 			return;
@@ -137,22 +123,18 @@ class Loomi_SVG {
 		$attrs_to_remove = [];
 		foreach ( iterator_to_array( $node->attributes ) as $attr ) {
 			$name = strtolower( $attr->nodeName );
-
 			if ( preg_match( '/^on[a-z]+$/i', $name ) ) {
 				$attrs_to_remove[] = $attr->nodeName;
 				continue;
 			}
-
 			if ( in_array( $name, [ 'href', 'xlink:href' ], true ) ) {
 				$value = trim( strtolower( $attr->nodeValue ) );
 				if ( strpos( $value, 'javascript:' ) === 0 ) {
 					$attrs_to_remove[] = $attr->nodeName;
 					continue;
 				}
-				// Block all data: URIs except non-SVG images. data:image/svg+xml can carry script when rendered via <use>.
 				if ( strpos( $value, 'data:' ) === 0 ) {
-					$is_safe_image = strpos( $value, 'data:image/' ) === 0
-						&& strpos( $value, 'data:image/svg' ) !== 0;
+					$is_safe_image = strpos( $value, 'data:image/' ) === 0 && strpos( $value, 'data:image/svg' ) !== 0;
 					if ( ! $is_safe_image ) {
 						$attrs_to_remove[] = $attr->nodeName;
 						continue;
@@ -183,35 +165,19 @@ class Loomi_SVG {
 	}
 
 	public static function fix_preview( $response, $attachment, $meta ) {
-		if ( ! is_array( $response ) ) {
+		if ( ! is_array( $response ) || ( $response['mime'] ?? '' ) !== 'image/svg+xml' ) {
 			return $response;
 		}
-		if ( ( $response['mime'] ?? '' ) !== 'image/svg+xml' ) {
-			return $response;
-		}
-
 		$url = $response['url'] ?? wp_get_attachment_url( $attachment->ID );
 		if ( ! $url ) {
 			return $response;
 		}
-
 		$response['sizes'] = [
-			'full'      => [
-				'url'         => $url,
-				'width'       => $response['width'] ?? 150,
-				'height'      => $response['height'] ?? 150,
-				'orientation' => 'portrait',
-			],
-			'thumbnail' => [
-				'url'         => $url,
-				'width'       => $response['width'] ?? 150,
-				'height'      => $response['height'] ?? 150,
-				'orientation' => 'portrait',
-			],
+			'full'      => [ 'url' => $url, 'width' => $response['width'] ?? 150, 'height' => $response['height'] ?? 150, 'orientation' => 'portrait' ],
+			'thumbnail' => [ 'url' => $url, 'width' => $response['width'] ?? 150, 'height' => $response['height'] ?? 150, 'orientation' => 'portrait' ],
 		];
 		$response['image'] = [ 'src' => $url ];
 		$response['icon']  = $url;
-
 		return $response;
 	}
 }

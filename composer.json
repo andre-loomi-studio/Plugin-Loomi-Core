@@ -1,0 +1,22 @@
+{
+    "name": "loomi/loomi-studio-setup",
+    "description": "Pacote interno de ajustes WordPress da Loomi.",
+    "type": "wordpress-plugin",
+    "license": "GPL-2.0-or-later",
+    "require": {
+        "php": ">=7.4"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^9.6",
+        "wp-phpunit/wp-phpunit": "^6.7",
+        "yoast/phpunit-polyfills": "^2.0"
+    },
+    "config": {
+        "allow-plugins": {
+            "composer/installers": true
+        }
+    },
+    "scripts": {
+        "test": "phpunit"
+    }
+}

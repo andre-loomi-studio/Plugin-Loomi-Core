@@ -1,0 +1,13 @@
+{
+  "name": "loomi-studio-setup-tests",
+  "private": true,
+  "description": "Visual regression tests for Loomi Studio Setup (not shipped in plugin ZIP).",
+  "scripts": {
+    "test:visual": "node tests/visual/sidebar-overflow.mjs",
+    "test:visual:install": "playwright install chromium"
+  },
+  "devDependencies": {
+    "playwright": "^1.48.0",
+    "pngjs": "^7.0.0"
+  }
+}

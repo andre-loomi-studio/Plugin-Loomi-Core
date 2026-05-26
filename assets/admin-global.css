@@ -1,0 +1,1211 @@
+/**
+ * Loomi Admin Branding — applied to ALL wp-admin pages.
+ *
+ * Sidebar + Topbar — tema dark (preto) ou light (branco), seguindo classe no <body>.
+ * Botões primary sempre amarelo
+ * Cores acent: preto #000 + amarelo Loomi #FBD603 (mantêm em ambos os modos)
+ */
+
+/* Theme tokens — dark default + auto base */
+body.loomi-theme-dark,
+body.loomi-theme-auto,
+body.wp-admin {
+	--loomi-g-bg: #000;
+	--loomi-g-bg-elevated: #0d0d0d;
+	--loomi-g-text: #fff;
+	--loomi-g-text-muted: rgba(255, 255, 255, 0.55);
+	--loomi-g-text-strong: #fff;
+	--loomi-g-border: rgba(255, 255, 255, 0.08);
+	--loomi-g-hover: rgba(255, 255, 255, 0.05);
+	--loomi-g-input-bg: #1a1a1a;
+}
+
+body.loomi-theme-light {
+	--loomi-g-bg: #ffffff;
+	--loomi-g-bg-elevated: #f8f8f8;
+	--loomi-g-text: #171717;
+	--loomi-g-text-muted: #6b6b6b;
+	--loomi-g-text-strong: #000;
+	--loomi-g-border: rgba(0, 0, 0, 0.08);
+	--loomi-g-hover: rgba(0, 0, 0, 0.04);
+	--loomi-g-input-bg: #ffffff;
+}
+
+@media (prefers-color-scheme: light) {
+	body.loomi-theme-auto {
+		--loomi-g-bg: #ffffff;
+		--loomi-g-bg-elevated: #f8f8f8;
+		--loomi-g-text: #171717;
+		--loomi-g-text-muted: #6b6b6b;
+		--loomi-g-text-strong: #000;
+		--loomi-g-border: rgba(0, 0, 0, 0.08);
+		--loomi-g-hover: rgba(0, 0, 0, 0.04);
+		--loomi-g-input-bg: #ffffff;
+	}
+}
+
+/* ============================================================
+   ADMIN BAR (TOPBAR)
+   ============================================================ */
+
+#wpadminbar {
+	background: var(--loomi-g-bg) !important;
+	color: var(--loomi-g-text) !important;
+	border-bottom: 1px solid var(--loomi-g-border) !important;
+}
+
+#wpadminbar,
+#wpadminbar * {
+	font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif !important;
+}
+
+#wpadminbar .ab-top-menu > li > .ab-item,
+#wpadminbar .ab-top-menu > li > .ab-item span,
+#wpadminbar .quicklinks .ab-top-menu > li > .ab-item {
+	background: transparent !important;
+	color: var(--loomi-g-text) !important;
+}
+
+#wpadminbar .ab-top-menu > li:hover > .ab-item,
+#wpadminbar .ab-top-menu > li.hover > .ab-item,
+#wpadminbar:not(.mobile) .ab-top-menu > li > .ab-item:focus,
+#wpadminbar:not(.mobile) .ab-top-menu > li:hover > .ab-item,
+#wpadminbar .ab-top-menu > li.menupop.hover > .ab-item {
+	background: rgba(251, 214, 3, 0.1) !important;
+	color: #FBD603 !important;
+}
+
+/* Admin bar submenu (dropdowns "Visit Site", "Howdy admin" etc.) — sempre fundo escuro */
+#wpadminbar .ab-sub-wrapper,
+#wpadminbar .ab-submenu,
+#wpadminbar .quicklinks .menupop ul,
+#wpadminbar .quicklinks .menupop.hover ul {
+	background: #1a1a1a !important;
+	border-radius: 8px !important;
+	box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4) !important;
+	overflow: hidden;
+}
+
+#wpadminbar .ab-submenu .ab-item,
+#wpadminbar .quicklinks .menupop ul li a,
+#wpadminbar .quicklinks .menupop.hover ul li a,
+#wpadminbar.nojs .quicklinks .menupop:hover ul li a {
+	color: #e5e5e5 !important;
+	background: #1a1a1a !important;
+}
+
+#wpadminbar .ab-sub-wrapper a:hover,
+#wpadminbar .ab-sub-wrapper a:focus,
+#wpadminbar .ab-submenu .ab-item:hover,
+#wpadminbar .ab-submenu .ab-item:focus,
+#wpadminbar li.menupop .ab-sub-wrapper .ab-item:hover {
+	color: #FBD603 !important;
+	background: #262626 !important;
+}
+
+/* Items dentro do admin bar dropdown NÃO devem ter fundo amarelo (mesmo current) */
+#wpadminbar .ab-submenu li.current .ab-item,
+#wpadminbar .ab-submenu li.wp-has-current-submenu .ab-item {
+	background: #1a1a1a !important;
+	color: #FBD603 !important;
+}
+
+#wpadminbar .ab-icon,
+#wpadminbar .ab-icon::before,
+#wpadminbar .ab-item::before,
+#wpadminbar > #wp-toolbar span.ab-label,
+#wpadminbar > #wp-toolbar span.noticon {
+	color: #fff !important;
+}
+
+/* Força dashicons font (evita OS renderizar code-points como emoji color) */
+#wpadminbar .ab-icon::before,
+#wpadminbar .ab-item::before,
+#wpadminbar [class*="dashicons-"]::before,
+#wpadminbar .dashicons,
+#wpadminbar .dashicons-before::before,
+#adminmenu .wp-menu-image::before,
+#adminmenu [class*="dashicons-"]::before,
+#adminmenu .dashicons,
+#adminmenu .dashicons-before::before {
+	font-family: dashicons !important;
+	font-style: normal !important;
+	font-weight: normal !important;
+	font-variant: normal !important;
+	text-transform: none !important;
+	-webkit-font-smoothing: antialiased;
+	-moz-osx-font-smoothing: grayscale;
+}
+
+/* Esconde o ícone da casinha (admin-home) no site name — fica só o texto, mais clean */
+#wpadminbar #wp-admin-bar-site-name > .ab-item::before,
+#wpadminbar #wp-admin-bar-site-name > .ab-item .ab-icon,
+#wpadminbar #wp-admin-bar-site-name > .ab-item .ab-icon::before,
+#wpadminbar li#wp-admin-bar-site-name .ab-icon,
+#wpadminbar li#wp-admin-bar-site-name .ab-icon::before {
+	display: none !important;
+	width: 0 !important;
+	margin: 0 !important;
+	padding: 0 !important;
+	content: none !important;
+}
+
+#wpadminbar #wp-admin-bar-site-name > .ab-item {
+	padding-left: 12px !important;
+}
+
+#wpadminbar .display-name,
+#wpadminbar #wp-admin-bar-my-account .display-name {
+	color: #fff !important;
+}
+
+#wpadminbar #wp-admin-bar-my-account .display-name strong {
+	color: #FBD603 !important;
+}
+
+/* Site name (canto superior esquerdo) — ponto amarelo accent */
+#wpadminbar #wp-admin-bar-site-name > .ab-item::before {
+	color: #FBD603 !important;
+}
+
+/* Search icon, comments icon etc. */
+#wpadminbar #wp-admin-bar-search .ab-item .ab-icon::before,
+#wpadminbar #wp-admin-bar-comments .ab-item .ab-icon::before {
+	color: #fff !important;
+}
+
+#wpadminbar #wp-admin-bar-comments.hover .ab-item .ab-icon::before {
+	color: #FBD603 !important;
+}
+
+/* Comment counter no admin bar */
+#wpadminbar .ab-icon .pending-count,
+#wpadminbar .ab-icon-comment-count {
+	background: #FBD603 !important;
+	color: #000 !important;
+}
+
+/* ============================================================
+   SIDEBAR — clean app-like (Linear/Vercel style)
+   ============================================================ */
+
+#adminmenuback,
+#adminmenuwrap,
+#adminmenu,
+#adminmenu .wp-submenu,
+#adminmenu .wp-not-current-submenu .wp-submenu {
+	background: var(--loomi-g-bg) !important;
+}
+
+/* Largura nominal travada (180px expanded, 36px folded). #wpcontent { margin-left } é ajustado em conjunto pra não criar gap/overlap.
+ * Não usamos overflow:hidden aqui — o WP renderiza .wp-submenu de itens não-current como position:absolute fora do bbox da sidebar (flyout pra direita em hover) e qualquer clip no wrap quebra esse comportamento. O bleed do item active amarelo é prevenido pelo `overflow: visible` no <li> (D3) que evita a interação border-radius + overflow:hidden que causava fractional pixel bleed. */
+#adminmenuback,
+#adminmenuwrap {
+	width: 180px !important;
+	right: auto !important;
+}
+
+body.wp-admin:not(.folded) #wpcontent,
+body.wp-admin:not(.folded) #wpfooter {
+	margin-left: 180px !important;
+}
+
+body.folded #adminmenuback,
+body.folded #adminmenuwrap,
+.folded #adminmenuback,
+.folded #adminmenuwrap {
+	width: 36px !important;
+}
+
+#adminmenu {
+	border-right: none !important;
+	font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif !important;
+	padding: 8px 8px !important;
+}
+
+#adminmenu,
+#adminmenu * {
+	font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif !important;
+}
+
+/* NUKE TODOS os pointers/chevrons/triangles do WP sidebar.
+ * O WP cria esses pointer arrows via border-right-color em ::after/::before
+ * matching o body background color. Nuke todos os pseudo-elementos border-color
+ * + esconde wp-menu-arrow class container. */
+#adminmenu .wp-menu-arrow,
+#adminmenu .wp-menu-arrow * {
+	display: none !important;
+	visibility: hidden !important;
+}
+
+#adminmenu li::after,
+#adminmenu li::before,
+#adminmenu li a::after,
+#adminmenu li a::before,
+#adminmenu .menu-top::after,
+#adminmenu .menu-top::before,
+#adminmenu .menu-top a::after,
+#adminmenu .menu-top a::before,
+#adminmenu .wp-submenu::after,
+#adminmenu .wp-submenu::before,
+#adminmenu .wp-submenu-head::after,
+#adminmenu .wp-submenu-head::before,
+#adminmenu .wp-submenu li::after,
+#adminmenu .wp-submenu li::before,
+#adminmenu .wp-submenu li a::after,
+#adminmenu .wp-submenu li a::before {
+	border: 0 !important;
+	border-right: 0 !important;
+	border-left: 0 !important;
+	border-color: transparent !important;
+	content: none !important;
+	background: transparent !important;
+	width: 0 !important;
+	height: 0 !important;
+	display: none !important;
+}
+
+/* Force NO border/box-shadow em items active (o que WP usa pra criar chevron) */
+#adminmenu li.current > a.menu-top,
+#adminmenu li.wp-has-current-submenu > a.menu-top,
+#adminmenu li.current.menu-top > a.menu-top,
+#adminmenu li.wp-has-current-submenu,
+#adminmenu li.current,
+#adminmenu .wp-submenu .wp-submenu-head {
+	border-right: 0 !important;
+	border-left: 0 !important;
+	box-shadow: none !important;
+}
+
+/* Items default */
+#adminmenu li.menu-top {
+	background: transparent !important;
+	border: none !important;
+	border-radius: 8px !important;
+	margin: 2px 0 !important;
+	overflow: visible;
+}
+
+#adminmenu li.menu-top > a.menu-top {
+	padding: 10px 12px !important;
+	font-size: 13.5px !important;
+	font-weight: 500 !important;
+	color: var(--loomi-g-text-muted) !important;
+	border-radius: 8px !important;
+	transition: background 0.15s ease, color 0.15s ease;
+	min-height: 0 !important;
+	line-height: 1.4 !important;
+}
+
+#adminmenu .wp-menu-name {
+	padding: 0 !important;
+	font-weight: 500 !important;
+}
+
+/* Icones — forçar monocromáticos (currentColor herda do link) */
+#adminmenu div.wp-menu-image,
+#adminmenu li.menu-top .wp-menu-image {
+	width: 24px !important;
+	height: 20px !important;
+	padding: 0 !important;
+	margin-right: 12px !important;
+}
+
+#adminmenu div.wp-menu-image::before,
+#adminmenu li.menu-top .wp-menu-image::before,
+#adminmenu div.wp-menu-image img {
+	color: var(--loomi-g-text-muted) !important;
+	opacity: 1 !important;
+	font-size: 18px !important;
+	line-height: 1 !important;
+	position: relative;
+	bottom: 6px;
+}
+
+/* Esconde imagens custom de menu (geralmente png/svg coloridos) e força dashicon mono */
+#adminmenu .wp-menu-image img {
+	display: none !important;
+}
+
+/* Hover state */
+#adminmenu li.menu-top:hover > a.menu-top,
+#adminmenu li.menu-top.focus > a.menu-top,
+#adminmenu li.opensub > a.menu-top,
+#adminmenu li > a.menu-top:focus {
+	background: var(--loomi-g-hover) !important;
+	color: var(--loomi-g-text-strong) !important;
+	box-shadow: none !important;
+}
+
+#adminmenu li.menu-top:hover .wp-menu-name,
+#adminmenu li.menu-top.focus .wp-menu-name,
+#adminmenu li.opensub .wp-menu-name,
+#adminmenu li.menu-top:hover div.wp-menu-image::before,
+#adminmenu li.menu-top.focus div.wp-menu-image::before,
+#adminmenu li.opensub div.wp-menu-image::before {
+	color: var(--loomi-g-text-strong) !important;
+}
+
+/* ACTIVE item — destaque amarelo */
+#adminmenu li.current > a.menu-top,
+#adminmenu li.wp-has-current-submenu > a.menu-top,
+#adminmenu li.wp-has-current-submenu.wp-menu-open > a.menu-top,
+#adminmenu li.current.menu-top > a.menu-top {
+	background: #FBD603 !important;
+	color: #000 !important;
+	font-weight: 600 !important;
+	box-shadow: none !important;
+}
+
+#adminmenu li.current > a.menu-top .wp-menu-name,
+#adminmenu li.wp-has-current-submenu > a.menu-top .wp-menu-name,
+#adminmenu li.current.menu-top > a.menu-top .wp-menu-name {
+	color: #000 !important;
+	font-weight: 600 !important;
+}
+
+#adminmenu li.current > a.menu-top div.wp-menu-image::before,
+#adminmenu li.wp-has-current-submenu > a.menu-top div.wp-menu-image::before {
+	color: #000 !important;
+}
+
+/* Submenu (expandido) */
+#adminmenu .wp-submenu,
+#adminmenu .wp-submenu-wrap {
+	background: transparent !important;
+	border: none !important;
+	box-shadow: none !important;
+	padding: 4px 0 8px !important;
+	margin-left: 4px !important;
+}
+
+#adminmenu .wp-submenu li {
+	margin: 0 !important;
+	padding: 0 !important;
+}
+
+#adminmenu .wp-submenu a {
+	color: var(--loomi-g-text-muted) !important;
+	padding: 7px 12px 7px 44px !important;
+	font-size: 13px !important;
+	font-weight: 400 !important;
+	border-radius: 6px !important;
+	margin: 1px 0 !important;
+	transition: color 0.15s ease, background 0.15s ease;
+	min-height: 0 !important;
+}
+
+#adminmenu .wp-submenu a:hover,
+#adminmenu .wp-submenu a:focus {
+	color: var(--loomi-g-text-strong) !important;
+	background: var(--loomi-g-hover) !important;
+}
+
+#adminmenu .wp-submenu li.current a,
+#adminmenu .wp-submenu li.current a:hover,
+#adminmenu .wp-submenu li.current a:focus,
+#adminmenu li.menu-top .wp-submenu li.current a {
+	color: #FBD603 !important;
+	background: transparent !important;
+	font-weight: 600 !important;
+}
+
+#adminmenu .wp-submenu .wp-submenu-head,
+#adminmenu .wp-has-current-submenu .wp-submenu .wp-submenu-head {
+	display: none !important;
+}
+
+/* Separators ("Appearance" group dividers) */
+#adminmenu li.wp-menu-separator {
+	background: transparent !important;
+	border: none !important;
+	height: 1px !important;
+	margin: 12px 8px !important;
+	padding: 0 !important;
+	min-height: 1px !important;
+	background-color: rgba(255, 255, 255, 0.06) !important;
+}
+
+/* Counter bubbles (Plugins "1") */
+#adminmenu .update-plugins,
+#adminmenu .awaiting-mod,
+#adminmenu .menu-counter,
+#adminmenu .plugin-count {
+	background: #FBD603 !important;
+	color: #000 !important;
+	font-weight: 700 !important;
+	font-size: 10px !important;
+	box-shadow: none !important;
+	border-radius: 999px !important;
+	padding: 2px 6px !important;
+	min-width: 16px !important;
+	line-height: 1.4 !important;
+}
+
+#adminmenu li.current .update-plugins,
+#adminmenu li.current .awaiting-mod,
+#adminmenu li.wp-has-current-submenu .update-plugins {
+	background: #000 !important;
+	color: #FBD603 !important;
+}
+
+/* Collapse menu (Recolher / Expand) — funciona tanto unfolded quanto folded */
+#collapse-menu,
+#collapse-menu *,
+.folded #collapse-menu {
+	color: #6b6b6b !important;
+	background: transparent !important;
+	font-size: 12px !important;
+	border: none !important;
+	transition: color 0.15s ease;
+}
+
+#collapse-menu {
+	padding: 14px 12px !important;
+}
+
+#collapse-menu:hover,
+#collapse-menu:focus,
+#collapse-menu:hover *,
+#collapse-menu:focus * {
+	color: #FBD603 !important;
+}
+
+#collapse-button {
+	background: transparent !important;
+	border: none !important;
+}
+
+#collapse-button div,
+#collapse-button div::before,
+#collapse-button div::after {
+	color: #6b6b6b !important;
+	background: transparent !important;
+	border-color: #6b6b6b !important;
+}
+
+#collapse-menu:hover #collapse-button div,
+#collapse-menu:focus #collapse-button div,
+#collapse-menu:hover #collapse-button div::before,
+#collapse-menu:focus #collapse-button div::before,
+#collapse-menu:hover #collapse-button div::after,
+#collapse-menu:focus #collapse-button div::after {
+	color: #FBD603 !important;
+	border-color: #FBD603 !important;
+}
+
+/* Folded sidebar — ajustes pro estado collapsado */
+.folded #adminmenu li.menu-top {
+	border-radius: 8px !important;
+	margin: 2px 4px !important;
+	padding: 0 !important;
+}
+
+.folded #adminmenu li.menu-top > a.menu-top {
+	padding: 10px !important;
+	display: flex !important;
+	align-items: center !important;
+	justify-content: center !important;
+}
+
+.folded #adminmenu div.wp-menu-image,
+.folded #adminmenu li.menu-top .wp-menu-image {
+	width: 24px !important;
+	height: 24px !important;
+	margin: 0 !important;
+	display: flex !important;
+	align-items: center !important;
+	justify-content: center !important;
+}
+
+.folded #adminmenu div.wp-menu-image::before {
+	font-size: 20px !important;
+	line-height: 1 !important;
+	color: #c4c4c4 !important;
+}
+
+.folded #adminmenu li.current div.wp-menu-image::before,
+.folded #adminmenu li.wp-has-current-submenu div.wp-menu-image::before {
+	color: #000 !important;
+}
+
+.folded #adminmenu li.menu-top:hover div.wp-menu-image::before,
+.folded #adminmenu li.menu-top.focus div.wp-menu-image::before {
+	color: #fff !important;
+}
+
+/* Submenu popup no estado folded REAL (sidebar manualmente collapsada) */
+.folded #adminmenu .wp-submenu {
+	background: #1a1a1a !important;
+	border-radius: 8px !important;
+	box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4) !important;
+	border: none !important;
+	padding: 6px !important;
+	margin-left: 8px !important;
+}
+
+.folded #adminmenu .wp-submenu a {
+	padding: 8px 14px !important;
+	border-radius: 6px !important;
+	color: #c4c4c4 !important;
+}
+
+.folded #adminmenu .wp-submenu a:hover,
+.folded #adminmenu .wp-submenu a:focus {
+	background: rgba(255, 255, 255, 0.06) !important;
+	color: #FBD603 !important;
+}
+
+/* Mostra o submenu-head SOMENTE no estado folded (popup), nunca no inline expanded */
+.folded #adminmenu .wp-submenu .wp-submenu-head {
+	display: block !important;
+	background: transparent !important;
+	color: #fff !important;
+	font-weight: 600 !important;
+	font-size: 13px !important;
+	padding: 8px 14px !important;
+	border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
+	margin-bottom: 4px !important;
+}
+
+/* Esconde "WordPress X.X is available" notice no admin */
+.update-nag {
+	display: none !important;
+}
+
+/* ============================================================
+   BUTTONS PRIMARY (across all admin pages)
+   ============================================================ */
+
+body.wp-admin .wp-core-ui .button-primary,
+body.wp-admin .wp-core-ui .button.button-primary {
+	background: #FBD603 !important;
+	border-color: #FBD603 !important;
+	color: #000 !important;
+	box-shadow: none !important;
+	text-shadow: none !important;
+	border-radius: 6px !important;
+	padding: 4px 14px !important;
+	min-height: 32px !important;
+	font-weight: 600 !important;
+	transition: background 0.15s ease, color 0.15s ease, box-shadow 0.15s ease;
+}
+
+body.wp-admin .wp-core-ui .button-primary:hover {
+	background: #000 !important;
+	border-color: #000 !important;
+	color: #FBD603 !important;
+	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
+}
+
+body.wp-admin .wp-core-ui .button-primary:focus {
+	outline: 3px solid rgba(251, 214, 3, 0.4) !important;
+	outline-offset: 1px;
+}
+
+body.wp-admin .wp-core-ui .button-primary:disabled,
+body.wp-admin .wp-core-ui .button-primary[disabled] {
+	background: #d4d4d4 !important;
+	color: #737373 !important;
+	border-color: #d4d4d4 !important;
+	cursor: not-allowed;
+}
+
+/* ============================================================
+   NOTICES (admin notices with yellow accent)
+   ============================================================ */
+
+body.wp-admin .notice {
+	background: #FFFBEB !important;
+	border-left: 4px solid #FBD603 !important;
+	border-radius: 0 6px 6px 0 !important;
+	box-shadow: none !important;
+	color: #1a1a1a !important;
+}
+
+body.wp-admin .notice p,
+body.wp-admin .notice strong {
+	color: #1a1a1a !important;
+}
+
+body.wp-admin .notice .button-link {
+	color: #000 !important;
+}
+
+/* Manter notice-error (vermelho) e notice-success (verde) reconhecíveis */
+body.wp-admin .notice-error,
+body.wp-admin .notice.error {
+	background: #FEF2F2 !important;
+	border-left-color: #DC2626 !important;
+}
+
+body.wp-admin .notice-success,
+body.wp-admin .notice.updated {
+	background: #F0FDF4 !important;
+	border-left-color: #16A34A !important;
+}
+
+/* ============================================================
+   LINKS & FOCUS
+   ============================================================ */
+
+body.wp-admin a {
+	color: #000;
+}
+
+body.wp-admin a:hover,
+body.wp-admin a:focus {
+	color: #737373;
+}
+
+body.wp-admin input[type="text"]:focus,
+body.wp-admin input[type="email"]:focus,
+body.wp-admin input[type="url"]:focus,
+body.wp-admin input[type="number"]:focus,
+body.wp-admin input[type="search"]:focus,
+body.wp-admin input[type="password"]:focus,
+body.wp-admin textarea:focus,
+body.wp-admin select:focus {
+	border-color: #000 !important;
+	box-shadow: 0 0 0 2px rgba(251, 214, 3, 0.45) !important;
+	outline: 0 !important;
+}
+
+/* ============================================================
+   LISTS & TABLES
+   ============================================================ */
+
+body.wp-admin .wp-list-table .row-actions a:hover,
+body.wp-admin .wp-list-table .row-title:hover,
+body.wp-admin .wp-list-table a:focus {
+	color: #000 !important;
+}
+
+body.wp-admin .plugins .active th,
+body.wp-admin .plugins .active td {
+	border-left: 3px solid #FBD603 !important;
+}
+
+/* ============================================================
+   GLOBAL CHECKBOXES / RADIOS
+   ============================================================ */
+
+body.wp-admin input[type="checkbox"]:checked,
+body.wp-admin input[type="radio"]:checked {
+	border-color: #000 !important;
+	background-color: #FBD603 !important;
+}
+
+body.wp-admin input[type="checkbox"]:checked::before {
+	color: #000 !important;
+}
+
+body.wp-admin input[type="checkbox"]:focus,
+body.wp-admin input[type="radio"]:focus {
+	border-color: #000 !important;
+	box-shadow: 0 0 0 2px rgba(251, 214, 3, 0.45) !important;
+}
+
+/* ============================================================
+   LOOMI WELCOME DASHBOARD WIDGET
+   ============================================================ */
+
+/* === Dashboard fullscreen takeover === */
+body.index-php #wpcontent {
+	padding-left: 0 !important;
+}
+
+body.index-php #wpbody-content {
+	padding-bottom: 0 !important;
+}
+
+body.index-php #wpbody-content > .wrap {
+	margin: 0 !important;
+	padding: 0 !important;
+	max-width: none !important;
+}
+
+body.index-php #dashboard-widgets-wrap,
+body.wp-admin.index-php #wpbody-content #dashboard-widgets-wrap {
+	margin: 0 !important;
+	padding: 0 !important;
+	width: 100% !important;
+	max-width: none !important;
+	background: var(--loomi-g-bg) !important;
+}
+
+body.index-php,
+body.index-php #wpbody,
+body.index-php #wpbody-content {
+	background: var(--loomi-g-bg) !important;
+}
+
+body.index-php #dashboard-widgets {
+	display: block !important;
+	margin: 0 !important;
+	padding: 0 !important;
+}
+
+body.index-php #postbox-container-1,
+body.index-php #postbox-container-2,
+body.index-php #postbox-container-3,
+body.index-php #postbox-container-4 {
+	width: 100% !important;
+	float: none !important;
+	margin: 0 !important;
+	padding: 0 !important;
+}
+
+body.index-php #normal-sortables,
+body.index-php #side-sortables,
+body.index-php #column3-sortables,
+body.index-php #column4-sortables {
+	margin: 0 !important;
+	padding: 0 !important;
+	min-height: 0 !important;
+}
+
+body.index-php .meta-box-sortables.ui-sortable-disabled {
+	min-height: 0 !important;
+}
+
+/* Esconde Screen Options + Help no Dashboard (limpeza) */
+body.index-php #screen-meta-links,
+body.index-php #screen-meta {
+	display: none !important;
+}
+
+/* Esconde "Welcome to WordPress" panel default */
+body.index-php #welcome-panel,
+body.index-php .welcome-panel-content {
+	display: none !important;
+}
+
+/* "Dashboard" title heading no topo do index.php */
+body.index-php #wpbody-content > .wrap > h1.wp-heading-inline,
+body.index-php #wpbody-content .wrap > h1:first-of-type {
+	display: none !important;
+}
+
+/* Esconde footer "Thank you..." em todo wp-admin (já feito mas confirma) */
+body.index-php #wpfooter {
+	display: none !important;
+}
+
+#loomi_welcome_widget {
+	background: var(--loomi-g-bg) !important;
+	border: none !important;
+	box-shadow: none !important;
+	border-radius: 0 !important;
+	margin: 0 !important;
+	min-height: calc(100vh - 32px) !important;
+	display: flex;
+	flex-direction: column;
+	overflow: hidden;
+	animation: loomiWidgetIn 0.45s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+#loomi_welcome_widget .inside {
+	flex: 1;
+	display: flex;
+	flex-direction: column;
+	margin: 0 !important;
+	padding: 0 !important;
+	background: var(--loomi-g-bg) !important;
+}
+
+/* Welcome widget — light theme adapta tipografia */
+body.loomi-theme-light .loomi-welcome-widget,
+body.loomi-theme-light .loomi-welcome-widget__product,
+body.loomi-theme-light .loomi-welcome-widget__logo {
+	color: var(--loomi-g-text-strong);
+}
+
+body.loomi-theme-light .loomi-welcome-widget__tagline {
+	color: var(--loomi-g-text-muted);
+}
+
+body.loomi-theme-light .loomi-welcome-widget__stat {
+	background: var(--loomi-g-bg-elevated);
+	border-color: var(--loomi-g-border);
+	color: var(--loomi-g-text-strong) !important;
+}
+
+body.loomi-theme-light .loomi-welcome-widget__stat-number {
+	color: var(--loomi-g-text-strong);
+}
+
+body.loomi-theme-light .loomi-welcome-widget__stat-label {
+	color: var(--loomi-g-text-muted);
+}
+
+body.loomi-theme-light .loomi-welcome-widget__stat-icon {
+	background: var(--loomi-g-bg);
+	color: var(--loomi-g-text-muted);
+}
+
+body.loomi-theme-light .loomi-welcome-widget__link {
+	color: var(--loomi-g-text-muted) !important;
+}
+
+body.loomi-theme-light .loomi-welcome-widget__version {
+	color: var(--loomi-g-text-muted);
+}
+
+body.loomi-theme-light .loomi-welcome-widget__product {
+	background: rgba(251, 214, 3, 0.18);
+}
+
+/* Auto theme + prefers-color-scheme light = mesmo set */
+@media (prefers-color-scheme: light) {
+	body.loomi-theme-auto .loomi-welcome-widget,
+	body.loomi-theme-auto .loomi-welcome-widget__product,
+	body.loomi-theme-auto .loomi-welcome-widget__logo {
+		color: var(--loomi-g-text-strong);
+	}
+	body.loomi-theme-auto .loomi-welcome-widget__tagline,
+	body.loomi-theme-auto .loomi-welcome-widget__link,
+	body.loomi-theme-auto .loomi-welcome-widget__version,
+	body.loomi-theme-auto .loomi-welcome-widget__stat-label {
+		color: var(--loomi-g-text-muted) !important;
+	}
+	body.loomi-theme-auto .loomi-welcome-widget__stat {
+		background: var(--loomi-g-bg-elevated);
+		border-color: var(--loomi-g-border);
+	}
+	body.loomi-theme-auto .loomi-welcome-widget__stat-number {
+		color: var(--loomi-g-text-strong);
+	}
+	body.loomi-theme-auto .loomi-welcome-widget__stat-icon {
+		background: var(--loomi-g-bg);
+		color: var(--loomi-g-text-muted);
+	}
+}
+
+/* No mobile WP admin bar é 46px */
+@media screen and (max-width: 782px) {
+	#loomi_welcome_widget {
+		min-height: calc(100vh - 46px) !important;
+	}
+}
+
+#loomi_welcome_widget .postbox-header,
+#loomi_welcome_widget .hndle,
+#loomi_welcome_widget .handlediv {
+	display: none !important;
+}
+
+#loomi_welcome_widget .inside {
+	padding: 0 !important;
+	margin: 0 !important;
+	background: #000 !important;
+}
+
+.loomi-welcome-widget {
+	color: #fff;
+	font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+	padding: 64px 64px 48px;
+	position: relative;
+	overflow: hidden;
+	flex: 1;
+	display: flex;
+	flex-direction: column;
+	justify-content: flex-start;
+	max-width: 1280px;
+	margin: 0 auto;
+	width: 100%;
+	box-sizing: border-box;
+}
+
+.loomi-welcome-widget__inner {
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	flex: 1;
+}
+
+.loomi-welcome-widget::before {
+	content: "";
+	position: absolute;
+	top: -130px;
+	right: -100px;
+	width: 600px;
+	height: 600px;
+	border-radius: 50%;
+	background: radial-gradient(
+		circle at center,
+		rgba(251, 214, 3, 0.28) 0%,
+		rgba(251, 214, 3, 0.14) 20%,
+		rgba(251, 214, 3, 0.06) 40%,
+		rgba(251, 214, 3, 0.02) 60%,
+		transparent 75%
+	);
+	filter: blur(20px);
+	pointer-events: none;
+	animation: loomiGlow 6s ease-in-out infinite alternate;
+	z-index: 0;
+}
+
+.loomi-welcome-widget__hero {
+	position: relative;
+	margin-bottom: 48px;
+}
+
+.loomi-welcome-widget__brand {
+	display: flex;
+	align-items: center;
+	gap: 20px;
+	margin-bottom: 16px;
+}
+
+.loomi-welcome-widget__logo {
+	height: 40px;
+	color: #fff;
+}
+
+.loomi-welcome-widget__product {
+	font-size: 11px;
+	font-weight: 700;
+	letter-spacing: 1.6px;
+	color: #FBD603;
+	text-transform: uppercase;
+	padding: 4px 10px;
+	background: rgba(251, 214, 3, 0.12);
+	border-radius: 999px;
+}
+
+.loomi-welcome-widget__tagline {
+	color: rgba(255, 255, 255, 0.6);
+	font-size: 16px;
+	line-height: 1.55;
+	margin: 0;
+	max-width: 640px;
+}
+
+.loomi-welcome-widget__stats {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+	gap: 16px;
+	margin-bottom: 48px;
+	position: relative;
+}
+
+.loomi-welcome-widget__stat {
+	display: flex;
+	flex-direction: column;
+	gap: 8px;
+	padding: 28px 24px;
+	background: rgba(255, 255, 255, 0.03);
+	border: 1px solid rgba(255, 255, 255, 0.06);
+	border-radius: 14px;
+	text-decoration: none !important;
+	color: #fff !important;
+	transition: background 0.2s ease, border-color 0.2s ease, transform 0.15s ease;
+	animation: loomiStatIn 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
+	position: relative;
+	overflow: hidden;
+}
+
+.loomi-welcome-widget__stat:hover {
+	background: rgba(251, 214, 3, 0.06);
+	border-color: rgba(251, 214, 3, 0.35);
+	transform: translateY(-2px);
+	color: #fff !important;
+}
+
+.loomi-welcome-widget__stat:hover .loomi-welcome-widget__stat-icon {
+	background: #FBD603;
+	color: #000;
+}
+
+.loomi-welcome-widget__stat-icon {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 44px;
+	height: 44px;
+	border-radius: 12px;
+	background: rgba(255, 255, 255, 0.06);
+	color: rgba(255, 255, 255, 0.55);
+	transition: background 0.2s ease, color 0.2s ease;
+	margin-bottom: 12px;
+}
+
+.loomi-welcome-widget__stat-number {
+	font-size: 40px;
+	font-weight: 700;
+	color: #fff;
+	line-height: 1;
+	letter-spacing: -1px;
+	font-variant-numeric: tabular-nums;
+}
+
+.loomi-welcome-widget__stat-label {
+	font-size: 11px;
+	font-weight: 700;
+	letter-spacing: 1.4px;
+	color: rgba(255, 255, 255, 0.4);
+	text-transform: uppercase;
+}
+
+.loomi-welcome-widget__version {
+	margin-left: auto;
+	font-size: 11px;
+	color: rgba(255, 255, 255, 0.3);
+	font-variant-numeric: tabular-nums;
+}
+
+.loomi-welcome-widget__stat {
+	padding: 12px 14px;
+	background: rgba(255, 255, 255, 0.04);
+	border: 1px solid rgba(255, 255, 255, 0.06);
+	border-radius: 8px;
+	display: flex;
+	flex-direction: column;
+	gap: 4px;
+	animation: loomiStatIn 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.loomi-welcome-widget__stat-label {
+	font-size: 10px;
+	font-weight: 600;
+	letter-spacing: 1.2px;
+	color: rgba(255, 255, 255, 0.5);
+	text-transform: uppercase;
+}
+
+.loomi-welcome-widget__stat-value {
+	font-size: 14px;
+	font-weight: 600;
+	color: #fff;
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	font-variant-numeric: tabular-nums;
+}
+
+.loomi-welcome-widget__dot {
+	width: 8px;
+	height: 8px;
+	background: #FBD603;
+	border-radius: 50%;
+	box-shadow: 0 0 0 3px rgba(251, 214, 3, 0.2);
+	flex-shrink: 0;
+}
+
+.loomi-welcome-widget__actions {
+	display: flex;
+	align-items: center;
+	gap: 20px;
+	position: relative;
+	flex-wrap: wrap;
+}
+
+.loomi-welcome-widget__cta {
+	display: inline-flex;
+	align-items: center;
+	gap: 10px;
+	padding: 14px 24px;
+	background: #FBD603;
+	color: #000 !important;
+	font-size: 14px;
+	font-weight: 600;
+	text-decoration: none !important;
+	border-radius: 10px;
+	transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.loomi-welcome-widget__cta:hover {
+	transform: translateY(-1px);
+	box-shadow: 0 6px 16px rgba(251, 214, 3, 0.4);
+	color: #000 !important;
+}
+
+.loomi-welcome-widget__cta svg {
+	transition: transform 0.2s ease;
+}
+
+.loomi-welcome-widget__cta:hover svg {
+	transform: translateX(3px);
+}
+
+.loomi-welcome-widget__link {
+	font-size: 12px;
+	color: rgba(255, 255, 255, 0.5) !important;
+	text-decoration: none !important;
+	transition: color 0.15s ease;
+}
+
+.loomi-welcome-widget__link:hover {
+	color: #FBD603 !important;
+}
+
+/* Pulse animação no ponto amarelo da logo */
+.loomi-pulse {
+	transform-origin: center;
+	transform-box: fill-box;
+	animation: loomiPulse 2.4s ease-in-out infinite;
+}
+
+@keyframes loomiPulse {
+	0%, 100% {
+		opacity: 1;
+		transform: scale(1);
+	}
+	50% {
+		opacity: 0.6;
+		transform: scale(1.25);
+	}
+}
+
+@keyframes loomiGlow {
+	from { opacity: 0.7; transform: scale(1); }
+	to   { opacity: 1; transform: scale(1.12); }
+}
+
+@keyframes loomiWidgetIn {
+	from {
+		opacity: 0;
+		transform: translateY(8px);
+	}
+	to {
+		opacity: 1;
+		transform: translateY(0);
+	}
+}
+
+@keyframes loomiStatIn {
+	from {
+		opacity: 0;
+		transform: translateY(6px);
+	}
+	to {
+		opacity: 1;
+		transform: translateY(0);
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.loomi-pulse,
+	.loomi-welcome-widget::before,
+	.loomi-welcome-widget,
+	.loomi-welcome-widget__stat {
+		animation: none !important;
+	}
+}
+
+/* ============================================================
+   SPINNER
+   ============================================================ */
+
+.spinner.is-active {
+	background-image: none !important;
+	border: 2px solid #d4d4d4 !important;
+	border-top-color: #FBD603 !important;
+	border-radius: 50% !important;
+	animation: loomi-spin 0.7s linear infinite;
+}
+
+@keyframes loomi-spin {
+	to { transform: rotate(360deg); }
+}

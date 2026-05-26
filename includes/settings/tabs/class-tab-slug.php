@@ -33,6 +33,19 @@ class Tab_Slug implements Loomi_Settings_Tab {
 					<code><?php echo esc_html( trailingslashit( home_url() ) ); ?></code>
 					<input type="text" id="loomi-login-slug" name="<?php echo esc_attr( Plugin::OPTION_KEY ); ?>[login_slug]" value="<?php echo esc_attr( $s['login_slug'] ); ?>" class="regular-text" />
 					<p class="description"><?php esc_html_e( 'Default: studio-access. Caracteres inválidos serão removidos; slugs reservadas (wp-admin, login, etc.) são rejeitadas.', 'loomi-studio-setup' ); ?></p>
+					<?php
+					$current_slug = trim( (string) ( $s['login_slug'] ?? 'studio-access' ), '/' );
+					if ( $current_slug === '' ) { $current_slug = 'studio-access'; }
+					$pretty_url   = esc_url( trailingslashit( home_url() ) . $current_slug . '/' );
+					$fallback_url = esc_url( add_query_arg( 'loomi_login', $current_slug, home_url( '/' ) ) );
+					?>
+					<p class="description" style="margin-top:10px;">
+						<strong><?php esc_html_e( 'Como acessar:', 'loomi-studio-setup' ); ?></strong><br>
+						<?php esc_html_e( 'URL bonita (requer pretty permalinks):', 'loomi-studio-setup' ); ?>
+						<code><?php echo esc_html( $pretty_url ); ?></code><br>
+						<?php esc_html_e( 'Fallback query-string (funciona em qualquer servidor, mesmo sem mod_rewrite/AllowOverride):', 'loomi-studio-setup' ); ?>
+						<code><?php echo esc_html( $fallback_url ); ?></code>
+					</p>
 				</td>
 			</tr>
 			<tr>

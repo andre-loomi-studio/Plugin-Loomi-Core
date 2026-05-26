@@ -20,3 +20,4 @@ tests_add_filter( 'muplugins_loaded', static function () {
 require $_tests_dir . '/includes/bootstrap.php';
 
 require __DIR__ . '/helpers/BaseTestCase.php';
+require __DIR__ . '/helpers/LogTestCase.php';

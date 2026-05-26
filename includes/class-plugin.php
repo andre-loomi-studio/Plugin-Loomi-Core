@@ -18,11 +18,19 @@ final class Plugin {
 	const UPDATE_TTL       = 12 * HOUR_IN_SECONDS;
 	const UPDATE_TIMEOUT   = 3;
 
+	const LOG_DIR_NAME     = 'logs';
+	const LOG_FILE_PREFIX  = 'loomi-critical-';
+
 	public static function version() : string {
 		return defined( 'LOOMI_STUDIO_VERSION' ) ? LOOMI_STUDIO_VERSION : '0.0.0';
 	}
 
 	public static function basename() : string {
 		return defined( 'LOOMI_STUDIO_BASENAME' ) ? LOOMI_STUDIO_BASENAME : self::SLUG . '/' . self::SLUG . '.php';
+	}
+
+	public static function log_dir() : string {
+		$base = defined( 'LOOMI_STUDIO_DIR' ) ? LOOMI_STUDIO_DIR : '';
+		return rtrim( wp_normalize_path( $base ), '/' ) . '/' . self::LOG_DIR_NAME;
 	}
 }

@@ -69,7 +69,7 @@ class AdminEndpointSecurityTest extends Loomi_TestCase {
 		Loomi_Login::register();
 
 		self::assertNotFalse(
-			has_action( 'init', [ 'Loomi_Login', 'gate_admin_endpoint' ] )
+			has_action( 'wp_loaded', [ 'Loomi_Login', 'gate_admin_endpoint' ] )
 		);
 	}
 }

@@ -93,8 +93,9 @@ class Loomi_Wordfence_Check implements Loomi_Module {
 		check_admin_referer( self::NONCE_ACTION );
 
 		$state    = self::get_state();
-		$referer  = wp_get_referer();
-		$redirect = $referer ? $referer : admin_url();
+		// Redirect fixo: wp_safe_redirect já bloqueia host externo, mas usar wp_get_referer()
+		// permitia ao atacante empurrar admin para paths arbitrários do mesmo host via Referer.
+		$redirect = admin_url( 'plugins.php' );
 
 		$required_cap = $state === 'absent' ? 'install_plugins' : 'activate_plugins';
 		if ( ! current_user_can( $required_cap ) ) {

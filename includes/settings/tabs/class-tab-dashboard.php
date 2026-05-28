@@ -232,7 +232,7 @@ class Tab_Dashboard implements Loomi_Settings_Tab {
 				</div>
 			</div>
 
-			<?php self::render_logger_box(); ?>
+			<?php self::render_logger_summary(); ?>
 
 			<div class="loomi-footer-meta">
 				<span><?php esc_html_e( 'Versão', 'loomi-studio-setup' ); ?> <?php echo esc_html( Plugin::version() ); ?></span>
@@ -246,45 +246,20 @@ class Tab_Dashboard implements Loomi_Settings_Tab {
 		<?php
 	}
 
-	private static function render_logger_box() : void {
-		echo '<div class="loomi-section-title">' . esc_html__( 'Eventos críticos recentes', 'loomi-studio-setup' ) . '</div>';
-		echo '<div class="loomi-logger-box">';
-
+	private static function render_logger_summary() : void {
 		if ( Loomi_Critical_Logger::is_disabled() ) {
-			echo '<p>' . esc_html__( 'Logger desativado por configuração', 'loomi-studio-setup' ) . '</p>';
-			echo '</div>';
 			return;
 		}
+		$count    = Loomi_Critical_Logger::count_recent_events( 7 );
+		$logs_url = admin_url( 'options-general.php?page=' . Plugin::SETTINGS_PAGE . '&tab=logs' );
 
-		$dir = Plugin::log_dir();
-		if ( ! is_dir( $dir ) || ! is_writable( $dir ) ) {
-			echo '<p class="loomi-logger-warn">' . esc_html__( 'Logs desabilitados: sem permissão de escrita em logs/', 'loomi-studio-setup' ) . '</p>';
-			echo '</div>';
-			return;
-		}
-
-		$count = Loomi_Critical_Logger::count_recent_events( 7 );
-		echo '<p><strong>' . (int) $count . '</strong> ' . esc_html__( 'eventos críticos nos últimos 7 dias.', 'loomi-studio-setup' ) . '</p>';
-
-		$today     = Loomi_Log_Writer::today();
-		$yesterday = gmdate( 'Y-m-d', strtotime( $today . ' -1 day' ) );
-
-		echo '<p class="loomi-logger-actions">';
-		foreach ( [ $today => __( 'Baixar log de hoje', 'loomi-studio-setup' ), $yesterday => __( 'Log de ontem', 'loomi-studio-setup' ) ] as $date => $label ) {
-			$path = Loomi_Log_Writer::log_path_for( $date );
-			if ( ! is_readable( $path ) ) {
-				continue;
-			}
-			$url = wp_nonce_url(
-				admin_url( 'admin-post.php?action=loomi_download_log&date=' . rawurlencode( $date ) ),
-				'loomi_download_log'
-			);
-			echo '<a class="button button-small" href="' . esc_url( $url ) . '">' . esc_html( $label ) . '</a> ';
-		}
+		echo '<p class="loomi-logger-summary">';
+		printf(
+			/* translators: %d: count of critical events in the last 7 days */
+			esc_html( _n( '%d evento crítico nos últimos 7 dias.', '%d eventos críticos nos últimos 7 dias.', (int) $count, 'loomi-studio-setup' ) ),
+			(int) $count
+		);
+		echo ' <a href="' . esc_url( $logs_url ) . '">' . esc_html__( 'Ver detalhes na aba Logs →', 'loomi-studio-setup' ) . '</a>';
 		echo '</p>';
-
-		echo '<p class="description">' . esc_html__( 'Logs ficam em ', 'loomi-studio-setup' ) . '<code>' . esc_html( basename( $dir ) ) . '/' . Plugin::LOG_FILE_PREFIX . 'YYYY-MM-DD.log</code>' . esc_html__( ' por ', 'loomi-studio-setup' ) . (int) Loomi_Critical_Logger::retention_days() . esc_html__( ' dias.', 'loomi-studio-setup' ) . '</p>';
-
-		echo '</div>';
 	}
 }

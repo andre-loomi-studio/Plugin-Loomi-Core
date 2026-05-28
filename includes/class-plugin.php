@@ -30,6 +30,11 @@ final class Plugin {
 	}
 
 	public static function log_dir() : string {
+		// Allow tests / external tooling to override the log location so PHPUnit
+		// runs don't pollute the production logs/ folder served to the admin UI.
+		if ( defined( 'LOOMI_LOG_DIR_OVERRIDE' ) && LOOMI_LOG_DIR_OVERRIDE ) {
+			return rtrim( wp_normalize_path( (string) LOOMI_LOG_DIR_OVERRIDE ), '/' );
+		}
 		$base = defined( 'LOOMI_STUDIO_DIR' ) ? LOOMI_STUDIO_DIR : '';
 		return rtrim( wp_normalize_path( $base ), '/' ) . '/' . self::LOG_DIR_NAME;
 	}

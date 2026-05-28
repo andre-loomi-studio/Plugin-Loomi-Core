@@ -70,6 +70,8 @@ class Loomi_Settings_Page implements Loomi_Module {
 			new Tab_Client_Role(),
 			new Tab_Anti_Spam(),
 			new Tab_Schema(),
+			new Tab_GTM(),
+			new Tab_Logs(),
 		];
 	}
 
@@ -140,13 +142,17 @@ class Loomi_Settings_Page implements Loomi_Module {
 				<span class="loomi-version">v<?php echo esc_html( Plugin::version() ); ?></span>
 			</div>
 
-			<nav class="nav-tab-wrapper">
-				<?php foreach ( $tabs as $tab ) : ?>
-					<a href="#<?php echo esc_attr( $tab->slug() ); ?>" data-tab-target="<?php echo esc_attr( $tab->slug() ); ?>" class="nav-tab loomi-tab-link <?php echo $active === $tab->slug() ? 'nav-tab-active' : ''; ?>">
-						<?php echo esc_html( $tab->label() ); ?>
-					</a>
-				<?php endforeach; ?>
-			</nav>
+			<div class="loomi-tabs-scroll" data-loomi-tabs-scroll>
+				<button type="button" class="loomi-tabs-arrow loomi-tabs-arrow--left" aria-label="<?php esc_attr_e( 'Rolar abas para a esquerda', 'loomi-studio-setup' ); ?>" tabindex="-1" hidden>&lsaquo;</button>
+				<nav class="nav-tab-wrapper">
+					<?php foreach ( $tabs as $tab ) : ?>
+						<a href="#<?php echo esc_attr( $tab->slug() ); ?>" data-tab-target="<?php echo esc_attr( $tab->slug() ); ?>" class="nav-tab loomi-tab-link <?php echo $active === $tab->slug() ? 'nav-tab-active' : ''; ?>">
+							<?php echo esc_html( $tab->label() ); ?>
+						</a>
+					<?php endforeach; ?>
+				</nav>
+				<button type="button" class="loomi-tabs-arrow loomi-tabs-arrow--right" aria-label="<?php esc_attr_e( 'Rolar abas para a direita', 'loomi-studio-setup' ); ?>" tabindex="-1" hidden>&rsaquo;</button>
+			</div>
 
 			<form method="post" action="options.php" class="loomi-studio-form">
 				<?php settings_fields( Plugin::SETTINGS_GROUP ); ?>
@@ -180,7 +186,61 @@ class Loomi_Settings_Page implements Loomi_Module {
 					$('.loomi-studio-tab').hide();
 					$('.loomi-studio-tab[data-tab="' + target + '"]').show();
 					syncDashboardClass(target);
+					// When user clicks a partially-visible tab, scroll it into view.
+					var el = this;
+					if (el && el.scrollIntoView) {
+						el.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'nearest' });
+					}
 				});
+
+				// Horizontal scroll + arrows for the tab nav (responsive overflow handling).
+				(function () {
+					var container = document.querySelector('[data-loomi-tabs-scroll]');
+					if (!container) return;
+					var nav   = container.querySelector('.nav-tab-wrapper');
+					var left  = container.querySelector('.loomi-tabs-arrow--left');
+					var right = container.querySelector('.loomi-tabs-arrow--right');
+					if (!nav || !left || !right) return;
+
+					function updateArrows() {
+						var overflow = nav.scrollWidth > nav.clientWidth + 1;
+						if (!overflow) {
+							left.hidden = true;
+							right.hidden = true;
+							container.classList.remove('is-overflowing');
+							return;
+						}
+						container.classList.add('is-overflowing');
+						var atStart = nav.scrollLeft <= 1;
+						var atEnd   = nav.scrollLeft + nav.clientWidth >= nav.scrollWidth - 1;
+						left.hidden  = atStart;
+						right.hidden = atEnd;
+					}
+
+					function scrollBy(delta) {
+						nav.scrollBy({ left: delta, behavior: 'smooth' });
+					}
+
+					left.addEventListener('click', function () { scrollBy(-Math.max(200, nav.clientWidth * 0.6)); });
+					right.addEventListener('click', function () { scrollBy(Math.max(200, nav.clientWidth * 0.6)); });
+
+					nav.addEventListener('scroll', updateArrows, { passive: true });
+					window.addEventListener('resize', updateArrows);
+
+					// Keyboard: ArrowLeft/ArrowRight when focus is in the tab strip.
+					nav.addEventListener('keydown', function (e) {
+						if (e.key === 'ArrowRight') { e.preventDefault(); scrollBy(Math.max(200, nav.clientWidth * 0.6)); }
+						else if (e.key === 'ArrowLeft') { e.preventDefault(); scrollBy(-Math.max(200, nav.clientWidth * 0.6)); }
+					});
+
+					// On load, ensure the active tab is visible.
+					var active = nav.querySelector('.nav-tab-active');
+					if (active && active.scrollIntoView) {
+						active.scrollIntoView({ block: 'nearest', inline: 'nearest' });
+					}
+
+					updateArrows();
+				})();
 				if ($.fn.wpColorPicker) {
 					$('#loomi-bg-color').wpColorPicker();
 				}

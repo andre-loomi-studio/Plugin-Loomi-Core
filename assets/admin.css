@@ -146,6 +146,13 @@ body.loomi-theme-light .loomi-studio-wrap {
 }
 
 /* === Tabs (flat with yellow underline) === */
+/* === Tabs nav: horizontal scroll wrapper with arrows === */
+.loomi-studio-wrap .loomi-tabs-scroll {
+	position: relative;
+	background: var(--loomi-bg-elevated);
+	box-shadow: var(--loomi-shadow-sm);
+}
+
 .loomi-studio-wrap .nav-tab-wrapper {
 	background: var(--loomi-bg-elevated);
 	border: none;
@@ -153,8 +160,72 @@ body.loomi-theme-light .loomi-studio-wrap {
 	margin: 0;
 	padding: 0 32px;
 	display: flex;
+	flex-wrap: nowrap;
 	gap: 4px;
-	box-shadow: var(--loomi-shadow-sm);
+	box-shadow: none;
+	overflow-x: auto;
+	overflow-y: hidden;
+	scroll-behavior: smooth;
+	scrollbar-width: none; /* Firefox */
+	-ms-overflow-style: none; /* IE/Edge legacy */
+	white-space: nowrap;
+	-webkit-overflow-scrolling: touch;
+}
+
+.loomi-studio-wrap .nav-tab-wrapper::-webkit-scrollbar {
+	display: none;
+}
+
+.loomi-studio-wrap .nav-tab {
+	flex: 0 0 auto;
+}
+
+/* Arrow buttons — visible only when nav overflows */
+.loomi-studio-wrap .loomi-tabs-arrow {
+	position: absolute;
+	top: 0;
+	bottom: 1px; /* sit above the 1px border-bottom of the nav */
+	width: 40px;
+	border: 0;
+	cursor: pointer;
+	padding: 0;
+	margin: 0;
+	font-size: 24px;
+	line-height: 1;
+	color: var(--loomi-text-on-elevated);
+	background: var(--loomi-bg-elevated);
+	z-index: 2;
+	transition: opacity 0.15s ease, background 0.15s ease;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+
+.loomi-studio-wrap .loomi-tabs-arrow:hover {
+	background: var(--loomi-bg-elevated);
+	color: var(--loomi-yellow, #FBD603);
+}
+
+.loomi-studio-wrap .loomi-tabs-arrow:focus-visible {
+	outline: 2px solid var(--loomi-yellow, #FBD603);
+	outline-offset: -2px;
+}
+
+.loomi-studio-wrap .loomi-tabs-arrow[hidden] {
+	display: none;
+}
+
+.loomi-studio-wrap .loomi-tabs-arrow--left  { left: 0; }
+.loomi-studio-wrap .loomi-tabs-arrow--right { right: 0; }
+
+/* Fade gradient on the side that has overflow */
+.loomi-studio-wrap .loomi-tabs-scroll.is-overflowing .loomi-tabs-arrow--left:not([hidden])  { box-shadow:  12px 0 16px -8px var(--loomi-bg-elevated); }
+.loomi-studio-wrap .loomi-tabs-scroll.is-overflowing .loomi-tabs-arrow--right:not([hidden]) { box-shadow: -12px 0 16px -8px var(--loomi-bg-elevated); }
+
+/* Make room for arrows so first/last tab don't sit under them */
+.loomi-studio-wrap .loomi-tabs-scroll.is-overflowing .nav-tab-wrapper {
+	padding-left: 44px;
+	padding-right: 44px;
 }
 
 .loomi-studio-wrap .nav-tab {
@@ -204,6 +275,16 @@ body.loomi-theme-light .loomi-studio-wrap {
 .loomi-studio-wrap .loomi-studio-tab {
 	padding: 40px 48px;
 	background: var(--loomi-bg-elevated);
+	color: var(--loomi-text-on-elevated);
+}
+
+.loomi-studio-wrap .loomi-studio-tab h2,
+.loomi-studio-wrap .loomi-studio-tab h3,
+.loomi-studio-wrap .loomi-studio-tab h4 {
+	color: var(--loomi-text-on-elevated);
+}
+
+.loomi-studio-wrap .loomi-studio-tab .form-table th {
 	color: var(--loomi-text-on-elevated);
 }
 

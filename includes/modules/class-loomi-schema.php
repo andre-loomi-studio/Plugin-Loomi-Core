@@ -276,7 +276,28 @@ class Loomi_Schema implements Loomi_Module {
 				)
 			);
 		}
+		if ( is_array( $decoded ) && self::contains_unsafe_token( $decoded ) ) {
+			return new WP_Error(
+				'loomi_schema_jsonld_unsafe',
+				__( 'JSON-LD contém sequência insegura "</script" — bloqueado.', 'loomi-studio-setup' )
+			);
+		}
 		return [ 'custom_json' => $json ];
+	}
+
+	private static function contains_unsafe_token( array $data ) : bool {
+		foreach ( $data as $value ) {
+			if ( is_string( $value ) ) {
+				if ( stripos( $value, '</script' ) !== false ) {
+					return true;
+				}
+			} elseif ( is_array( $value ) ) {
+				if ( self::contains_unsafe_token( $value ) ) {
+					return true;
+				}
+			}
+		}
+		return false;
 	}
 
 	public static function render_save_errors() : void {
@@ -312,7 +333,7 @@ class Loomi_Schema implements Loomi_Module {
 		if ( empty( $schema ) ) return;
 
 		echo "\n<script type=\"application/ld+json\">"
-			. wp_json_encode( $schema, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE )
+			. wp_json_encode( $schema, JSON_UNESCAPED_UNICODE )
 			. "</script>\n";
 	}
 

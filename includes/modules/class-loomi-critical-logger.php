@@ -392,6 +392,48 @@ XML;
 		return $count;
 	}
 
+	/**
+	 * List parsed critical events within the last $days, newest first.
+	 *
+	 * Reads NDJSON log files, decodes each line, and returns up to $limit entries.
+	 * Malformed lines are skipped silently. Used by the Logs settings tab.
+	 *
+	 * @return array<int,array<string,mixed>>
+	 */
+	public static function list_recent_events( int $days = 7, int $limit = 50 ) : array {
+		$cutoff  = time() - ( $days * DAY_IN_SECONDS );
+		$entries = [];
+		foreach ( Loomi_Log_Writer::list_log_files() as $file ) {
+			$mtime = @filemtime( $file );
+			if ( $mtime === false || $mtime < $cutoff ) {
+				continue;
+			}
+			$lines = @file( $file, FILE_SKIP_EMPTY_LINES | FILE_IGNORE_NEW_LINES );
+			if ( ! is_array( $lines ) ) {
+				continue;
+			}
+			foreach ( $lines as $line ) {
+				$decoded = json_decode( $line, true );
+				if ( ! is_array( $decoded ) ) {
+					continue;
+				}
+				$entries[] = $decoded;
+			}
+		}
+
+		// Sort by timestamp descending (newest first). Fall back to insertion order if ts missing.
+		usort( $entries, static function ( $a, $b ) {
+			$ta = isset( $a['ts'] ) ? strtotime( (string) $a['ts'] ) : 0;
+			$tb = isset( $b['ts'] ) ? strtotime( (string) $b['ts'] ) : 0;
+			return $tb <=> $ta;
+		} );
+
+		if ( count( $entries ) > $limit ) {
+			$entries = array_slice( $entries, 0, $limit );
+		}
+		return $entries;
+	}
+
 	public static function retention_days() : int {
 		return defined( 'LOOMI_LOG_RETENTION_DAYS' ) ? (int) LOOMI_LOG_RETENTION_DAYS : 30;
 	}

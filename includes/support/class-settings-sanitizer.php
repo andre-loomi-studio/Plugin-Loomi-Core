@@ -256,6 +256,22 @@ class Settings_Sanitizer {
 			$out['loomi_schema_global'] = $prev_schema;
 		}
 
+		if ( array_key_exists( 'loomi_gtm_id', $input ) ) {
+			$raw_gtm = strtoupper( trim( (string) $input['loomi_gtm_id'] ) );
+			if ( $raw_gtm === '' ) {
+				$out['loomi_gtm_id'] = '';
+			} elseif ( preg_match( '/^GTM-[A-Z0-9]{4,10}$/', $raw_gtm ) ) {
+				$out['loomi_gtm_id'] = $raw_gtm;
+			} else {
+				$out['loomi_gtm_id'] = isset( $previous['loomi_gtm_id'] ) ? (string) $previous['loomi_gtm_id'] : '';
+				add_settings_error(
+					Plugin::OPTION_KEY,
+					'loomi_invalid_gtm_id',
+					__( 'ID do GTM inválido — valor anterior mantido.', 'loomi-studio-setup' )
+				);
+			}
+		}
+
 		Settings_Repository::clear_cache();
 		return $out;
 	}

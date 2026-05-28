@@ -41,11 +41,17 @@ class Loomi_Login implements Loomi_Module {
 	}
 
 	public static function inject_login_styles() : void {
-		$bg       = Settings_Repository::get( 'custom_login_bg_color', '#000000' );
+		$bg = (string) Settings_Repository::get( 'custom_login_bg_color', '#000000' );
+		// Defense-in-depth: re-valida o hex aqui — sanitize_hex_color cobre input via UI mas
+		// não impede que outro plugin/migração escreva valor arbitrário direto na option.
+		// Página de login é pre-auth, então qualquer injeção daqui seria catastrófica.
+		if ( ! preg_match( '/^#[A-Fa-f0-9]{6}$/', $bg ) ) {
+			$bg = '#000000';
+		}
 		$logo_id  = (int) Settings_Repository::get( 'custom_login_logo_id', 0 );
 		$logo_url = $logo_id ? wp_get_attachment_url( $logo_id ) : '';
 
-		$css  = 'body.login{background:' . esc_attr( $bg ) . ' !important;}';
+		$css  = 'body.login{background:' . $bg . ' !important;}';
 		$css .= '#nav a,#backtoblog a,.privacy-policy-link{color:#fff !important;}';
 		$css .= '.login #login_error,.login .message,.login .success{color:#1d2327;}';
 
@@ -58,7 +64,7 @@ class Loomi_Login implements Loomi_Module {
 				. '}';
 		}
 
-		echo "<style id=\"loomi-login\">{$css}</style>\n"; // phpcs:ignore WordPress.Security.EscapeOutput
+		echo "<style id=\"loomi-login\">{$css}</style>\n";
 	}
 
 	public static function login_logo_url() : string {

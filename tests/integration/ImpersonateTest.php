@@ -85,12 +85,18 @@ class ImpersonateTest extends Loomi_LogTestCase {
 
 	/**
 	 * Build the return-cookie value using the same algorithm as the production module.
-	 * Format: "<admin_id>.<expires_at>.<hmac>" where hmac = HMAC-SHA256("<admin_id>|<expires_at>", AUTH_KEY).
+	 * Format: "<admin_id>.<expires_at>.<hmac>" where
+	 *   hmac = HMAC-SHA256("<admin_id>|<expires_at>|<session_token>", wp_salt('auth')).
+	 *
+	 * session_token comes from wp_get_session_token() and is usually '' in the test
+	 * environment (no LOGGED_IN_COOKIE) — that's fine, it just needs to match what
+	 * parse_return_cookie sees at verify time.
 	 */
 	private function generate_return_cookie( int $admin_id, ?int $expires_at = null ) : string {
-		$expires_at = $expires_at ?? ( time() + (int) Loomi_Impersonate::TTL );
-		$payload    = $admin_id . '|' . $expires_at;
-		$hmac       = hash_hmac( 'sha256', $payload, wp_salt( 'auth' ) );
+		$expires_at    = $expires_at ?? ( time() + (int) Loomi_Impersonate::TTL );
+		$session_token = function_exists( 'wp_get_session_token' ) ? (string) wp_get_session_token() : '';
+		$payload       = $admin_id . '|' . $expires_at . '|' . $session_token;
+		$hmac          = hash_hmac( 'sha256', $payload, wp_salt( 'auth' ) );
 		return $admin_id . '.' . $expires_at . '.' . $hmac;
 	}
 

@@ -61,6 +61,7 @@ class Settings_Repository {
 			'anti_spam_akismet_autoconfig'=> true,
 			'loomi_theme'                 => 'dark',
 			'loomi_schema_global'         => [],
+			'loomi_gtm_id'                => '',
 		];
 	}
 

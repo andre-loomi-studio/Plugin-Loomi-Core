@@ -27,7 +27,6 @@ class Loomi_Impersonate implements Loomi_Module {
 		add_action( 'edit_user_profile',                               [ __CLASS__, 'render_profile_link' ] );
 		add_action( 'admin_post_' . self::ACTION_START,                [ __CLASS__, 'handle_start' ] );
 		add_action( 'admin_post_' . self::ACTION_STOP,                 [ __CLASS__, 'handle_stop' ] );
-		add_action( 'admin_post_nopriv_' . self::ACTION_STOP,          [ __CLASS__, 'handle_stop' ] );
 		add_action( 'admin_notices',                                   [ __CLASS__, 'render_banner' ] );
 		add_action( 'admin_bar_menu',                                  [ __CLASS__, 'add_admin_bar_node' ], 80 );
 		add_action( 'wp_logout',                                       [ __CLASS__, 'clear_return_cookie' ] );
@@ -272,7 +271,10 @@ class Loomi_Impersonate implements Loomi_Module {
 
 	private static function set_return_cookie( int $admin_id ) : void {
 		$expires_at = time() + self::TTL;
-		$payload    = $admin_id . '|' . $expires_at;
+		// Session token amarra o cookie à sessão de login atual do operador: logout/login do admin
+		// regenera o token e invalida cookies emitidos previamente, mesmo que ainda dentro do TTL.
+		$session_token = function_exists( 'wp_get_session_token' ) ? (string) wp_get_session_token() : '';
+		$payload    = $admin_id . '|' . $expires_at . '|' . $session_token;
 		// wp_salt('auth') é portável e troca junto com AUTH_KEY — não depende da constante estar definida em runtime.
 		$hmac  = hash_hmac( 'sha256', $payload, wp_salt( 'auth' ) );
 		$value = $admin_id . '.' . $expires_at . '.' . $hmac;
@@ -307,9 +309,14 @@ class Loomi_Impersonate implements Loomi_Module {
 			return null;
 		}
 
-		$payload  = $admin_id . '|' . $expires_at;
+		$session_token = function_exists( 'wp_get_session_token' ) ? (string) wp_get_session_token() : '';
+		$payload  = $admin_id . '|' . $expires_at . '|' . $session_token;
 		$computed = hash_hmac( 'sha256', $payload, wp_salt( 'auth' ) );
 		if ( ! hash_equals( $computed, (string) $hmac ) ) {
+			self::log_event( 'impersonate.stop.invalid_cookie', [
+				'admin_id'   => $admin_id,
+				'expires_at' => $expires_at,
+			] );
 			return null;
 		}
 

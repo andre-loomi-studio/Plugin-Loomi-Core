@@ -69,6 +69,7 @@ class Loomi_Settings_Page implements Loomi_Module {
 			new Tab_Hide_Menus(),
 			new Tab_Client_Role(),
 			new Tab_Anti_Spam(),
+			new Tab_Schema(),
 		];
 	}
 

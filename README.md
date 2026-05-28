@@ -5,7 +5,7 @@
 [![PHP](https://img.shields.io/badge/PHP-%E2%89%A57.4-777BB4)]()
 [![WordPress](https://img.shields.io/badge/WordPress-%E2%89%A56.0-21759B)]()
 [![License](https://img.shields.io/badge/License-GPL--2.0%2B-blue)]()
-[![Version](https://img.shields.io/badge/Version-1.0.9-green)]()
+[![Version](https://img.shields.io/badge/Version-1.2.1-green)]()
 [![Tests](https://img.shields.io/badge/Tests-121%20passing-success)]()
 
 ---
@@ -23,7 +23,7 @@ wp plugin install loomi-studio-setup-1.0.0.zip --activate
 # 3. Configure em Configurações → Loomi Studio
 ```
 
-**5 abas no painel:** Custom Login · Login Slug · Esconder Menus · Role Cliente · Anti-Spam
+**6 abas no painel:** Custom Login · Login Slug · Esconder Menus · Role Cliente · Anti-Spam · Schema
 
 ---
 
@@ -38,6 +38,8 @@ wp plugin install loomi-studio-setup-1.0.0.zip --activate
 | Esconder menus (com descoberta dinâmica de CPTs) | — | ✅ | ✅ |
 | Role Cliente Loomi | — | ✅ | ✅ |
 | Anti-spam baseline (honeypot + time check + lockdown + Akismet) | — | ✅ | ✅ |
+| Schema JSON-LD por página (LocalBusiness, Service, FAQPage, JSON custom) | — | ✅ | ✅ |
+| Impersonate (admin → user, sem senha, banner persistente, audit log) | — | ✅ | ✅ |
 | Hardening de `/wp-admin/` | — | ✅ | ✅ |
 | Dependência Wordfence (auto-install) | ✅ | — | — |
 | Auto-update server-driven | ✅ | — | — |
@@ -332,6 +334,121 @@ define( 'LOOMI_AKISMET_KEY', 'sua-api-key-aqui' );
 ### Fora do escopo
 
 Contact forms de plugins terceiros (Contact Form 7, WPForms, Gravity Forms, Elementor Forms). Cada plugin tem sua própria proteção integrada — configure separadamente.
+
+</details>
+
+---
+
+<details>
+<summary><h2>🧬 Schema JSON-LD por página</h2></summary>
+
+Emissão de `<script type="application/ld+json">` no `<head>` com tipos diferentes por página. **Complementa** o output do Rank Math (não substitui) — os dois `<script>` coexistem.
+
+### Dados globais (uma vez por site)
+
+`Configurações → Loomi Studio → Schema`: configure o perfil do negócio que vai ser usado como base de qualquer página com schema `LocalBusiness`:
+
+- Nome legal, nome alternativo, descrição, telefone, e-mail, faixa de preço
+- Endereço (PostalAddress completo)
+- Geo (latitude/longitude validados −90..90 / −180..180)
+- Horário de funcionamento (multi-row: dias da semana + opens + closes)
+- Áreas atendidas (uma cidade por linha)
+- Perfis sociais (sameAs — uma URL por linha)
+- Identificador opcional (PropertyValue: ex. `Licença SS` + `59/2025`)
+
+### Por página (Post/Page)
+
+Meta box **"Schema desta página"** com dropdown:
+
+| Tipo | Output |
+|---|---|
+| **Nenhum** | Sem `<script>` adicional (default) |
+| **LocalBusiness** | Renderiza o perfil global com `@id = home_url + #localbusiness`. Pode sobrescrever `name`, `addressLocality`, `latitude`, `longitude` por página (útil pra landings geo) |
+| **Service** | Campos próprios `serviceType`, `description`, `areaServed[]`. `provider` referencia `@id` do LocalBusiness global |
+| **FAQPage** | Repeater de pergunta/resposta. Vira `mainEntity` com array de `Question`/`acceptedAnswer` |
+| **JSON-LD customizado** | Textarea com JSON cru. Validado via `json_decode` no save — JSON malformado bloqueia o save |
+
+### Validação e testes
+
+- Latitude/longitude fora do range → erro inline, save bloqueado
+- `serviceType` obrigatório em Service → erro inline
+- FAQPage: pares com pergunta OU resposta vazia → erro
+- Pares totalmente vazios são silenciosamente removidos
+- Botão **"Testar no Google Rich Results"** abre `search.google.com/test/rich-results?url=...` com a URL pública da página
+
+### Filter `loomi_schema_enabled`
+
+Desativa todo o output sem desativar o plugin:
+
+```php
+add_filter( 'loomi_schema_enabled', '__return_false' );
+```
+
+### Coexistência com Rank Math
+
+O módulo só usa `add_action( 'wp_head', ..., 99 )` — não filtra nem remove o output do Rank Math. Os dois `<script>` aparecem lado a lado no `<head>`. Google trata como entidades independentes (válido).
+
+### Por que não Rank Math Pro
+
+Rank Math Pro cobre o mesmo cenário (~30 tipos de schema), mas exige licença recorrente paga. Este módulo entrega o subset relevante (LocalBusiness/Service/FAQPage + JSON custom) sem custo, integrado ao mesmo plugin Loomi que os outros sites já usam.
+
+### v1.2.1 — Refinamentos da aba Schema (Maio 2026)
+
+- Preview ao vivo: botão "Visualizar JSON-LD" mostra exatamente o que será emitido, antes de salvar
+- Select de país com 40+ ISO codes + opção "Outro" para escape
+- Marcadores `*` em campos mínimos para LocalBusiness válido (name, address, telephone)
+- Dias da semana como checkboxes (mais rápido que multi-select Ctrl/Cmd)
+- Repeater de horários para empresas com horário diferente sábado/domingo
+- Latitude/longitude aceitam vírgula (`38,76283`) e normalizam para ponto na hora de salvar
+- Validação inline de URLs na textarea de perfis sociais (sameAs)
+- Bug fix: textareas no tema dark agora respeitam o background do tema (não mais branco)
+
+</details>
+
+---
+
+<details>
+<summary><h2>🎭 Impersonate (admin → user sem senha)</h2></summary>
+
+Admin acessa qualquer conta como o próprio usuário, sem precisar de senha. Útil pra reproduzir layout, debugar permissões, validar fluxos do cliente.
+
+### Como usar
+
+1. `Usuários → Todos os Usuários`
+2. Passe o mouse na linha de qualquer user **não-admin** → aparece a ação **"Impersonar"**
+3. Clique → sessão troca pro user-alvo, banner vermelho no topo do admin avisa "Você está impersonando **João**"
+4. Clique no botão **"Voltar como [seu nome]"** no banner pra retornar
+
+A ação também aparece na tela de perfil do usuário (`Usuários → Editar`).
+
+### Restrições de segurança
+
+- Apenas admins (`manage_options`) podem impersonar
+- **Não pode impersonar outro administrator** (evita escalada lateral entre admins)
+- Não pode impersonar a si mesmo
+- Cookie de retorno HMAC-assinado com `wp_salt('auth')` — TTL de 2 horas
+- Logout do admin original limpa o cookie de retorno
+- Audit log estruturado via `Loomi_Critical_Logger` em cada start/stop/blocked
+
+### Filter `loomi_impersonate_enabled`
+
+Desliga toda a feature sem desativar o plugin:
+
+```php
+add_filter( 'loomi_impersonate_enabled', '__return_false' );
+```
+
+### Coexistência com [User Switching](https://wordpress.org/plugins/user-switching/)
+
+Se o plugin **User Switching** estiver ativo, o módulo Loomi se desliga automaticamente (detecção via `function_exists('user_switching_set_olduser_cookie')`) e exibe um aviso no admin informando que a impersonação está delegada a ele.
+
+### Audit log
+
+Cada transição gera entrada estruturada:
+```json
+{ "event": "impersonate_start", "admin_id": 1, "target_id": 42, "ip": "...", "ua": "...", "ts": 1748... }
+```
+Eventos: `impersonate_start`, `impersonate_stop`, `impersonate_blocked` (esse último com `reason` indicando o motivo do bloqueio).
 
 </details>
 

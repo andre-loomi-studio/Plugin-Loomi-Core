@@ -60,6 +60,7 @@ class Settings_Repository {
 			'anti_spam_comment_lockdown'  => true,
 			'anti_spam_akismet_autoconfig'=> true,
 			'loomi_theme'                 => 'dark',
+			'loomi_schema_global'         => [],
 		];
 	}
 

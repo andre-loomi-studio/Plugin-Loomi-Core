@@ -3,7 +3,7 @@
  * Plugin Name:       Loomi Studio Setup
  * Plugin URI:        https://loomi.studio
  * Description:       Pacote de ajustes recorrentes para sites Loomi: upload de SVG, custom login, slug de login, ocultação de menus, role de cliente, duplicação de posts/páginas e auto-update centralizado.
- * Version:           1.0.9
+ * Version:           1.2.1
  * Requires at least: 6.0
  * Requires PHP:      7.4
  * Author:            Loomi
@@ -18,7 +18,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-define( 'LOOMI_STUDIO_VERSION', '1.0.9' );
+define( 'LOOMI_STUDIO_VERSION', '1.2.1' );
 define( 'LOOMI_STUDIO_FILE', __FILE__ );
 define( 'LOOMI_STUDIO_DIR', plugin_dir_path( __FILE__ ) );
 define( 'LOOMI_STUDIO_URL', plugin_dir_url( __FILE__ ) );
@@ -48,6 +48,7 @@ require_once LOOMI_STUDIO_DIR . 'includes/settings/tabs/class-tab-slug.php';
 require_once LOOMI_STUDIO_DIR . 'includes/settings/tabs/class-tab-hide-menus.php';
 require_once LOOMI_STUDIO_DIR . 'includes/settings/tabs/class-tab-client-role.php';
 require_once LOOMI_STUDIO_DIR . 'includes/settings/tabs/class-tab-anti-spam.php';
+require_once LOOMI_STUDIO_DIR . 'includes/settings/tabs/class-tab-schema.php';
 require_once LOOMI_STUDIO_DIR . 'includes/settings/class-settings-page.php';
 
 // Modules
@@ -60,6 +61,8 @@ require_once LOOMI_STUDIO_DIR . 'includes/modules/class-loomi-duplicate.php';
 require_once LOOMI_STUDIO_DIR . 'includes/modules/class-loomi-anti-spam.php';
 require_once LOOMI_STUDIO_DIR . 'includes/modules/class-loomi-wordfence-check.php';
 require_once LOOMI_STUDIO_DIR . 'includes/modules/class-loomi-dashboard-widget.php';
+require_once LOOMI_STUDIO_DIR . 'includes/modules/class-loomi-schema.php';
+require_once LOOMI_STUDIO_DIR . 'includes/modules/class-loomi-impersonate.php';
 require_once LOOMI_STUDIO_DIR . 'includes/class-loomi-updater.php';
 
 // Legacy alias
@@ -80,6 +83,8 @@ add_action( 'plugins_loaded', static function () {
 		Loomi_Anti_Spam::class,
 		Loomi_Wordfence_Check::class,
 		Loomi_Dashboard_Widget::class,
+		Loomi_Schema::class,
+		Loomi_Impersonate::class,
 		Loomi_Settings_Page::class,
 	];
 	foreach ( $modules as $module ) {

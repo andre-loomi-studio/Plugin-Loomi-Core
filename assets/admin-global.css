@@ -1204,3 +1204,111 @@ body.loomi-theme-light .loomi-welcome-widget__product {
 @keyframes loomi-spin {
 	to { transform: rotate(360deg); }
 }
+
+/* ============================================================
+   SCHEMA TAB — textareas dark theme
+   ============================================================ */
+
+/* Textareas no tema dark recebem o mesmo treatment que inputs da .loomi-studio-wrap.
+ * O wrap define --loomi-gray-50 / --loomi-gray-300 / --loomi-gray-900 conforme o tema,
+ * então basta reusar os tokens. Scoped à aba schema pra não vazar pra outras abas. */
+body.loomi-theme-dark .loomi-studio-tab[data-tab="schema"] textarea,
+body.loomi-theme-auto .loomi-studio-tab[data-tab="schema"] textarea {
+	background: var(--loomi-gray-50, #161616) !important;
+	color: var(--loomi-gray-900, #fff) !important;
+	border: 1.5px solid var(--loomi-gray-300, rgba(255, 255, 255, 0.12)) !important;
+	border-radius: var(--loomi-radius-sm, 6px);
+	padding: 9px 14px;
+	font-family: inherit;
+	font-size: 14px;
+	transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+body.loomi-theme-dark .loomi-studio-tab[data-tab="schema"] textarea:hover,
+body.loomi-theme-auto .loomi-studio-tab[data-tab="schema"] textarea:hover {
+	border-color: var(--loomi-gray-500, rgba(255, 255, 255, 0.5)) !important;
+}
+
+body.loomi-theme-dark .loomi-studio-tab[data-tab="schema"] textarea:focus,
+body.loomi-theme-auto .loomi-studio-tab[data-tab="schema"] textarea:focus {
+	border-color: var(--loomi-gray-900, #fff) !important;
+	outline: 3px solid rgba(251, 214, 3, 0.4) !important;
+	outline-offset: 0;
+	box-shadow: none !important;
+}
+
+@media (prefers-color-scheme: light) {
+	body.loomi-theme-auto .loomi-studio-tab[data-tab="schema"] textarea {
+		background: var(--loomi-gray-50, #f8f8f8) !important;
+		color: var(--loomi-gray-900, #171717) !important;
+		border-color: var(--loomi-gray-300, #d4d4d4) !important;
+	}
+}
+
+/* Marcador de campo obrigatório (* vermelho ao lado de labels) */
+.loomi-required {
+	color: #d63638;
+	margin-left: 4px;
+	font-weight: 700;
+	cursor: help;
+}
+
+/* ============================================================
+   IMPERSONATE BANNER (admin → user persistent notice)
+   ============================================================ */
+
+body.wp-admin .notice.loomi-impersonate-banner {
+	border-left-color: #d63638 !important;
+	padding: 10px 12px !important;
+}
+
+body.wp-admin .notice.loomi-impersonate-banner strong {
+	color: #d63638 !important;
+}
+
+body.wp-admin .notice.loomi-impersonate-banner .button {
+	margin-left: 12px !important;
+}
+
+/* ============================================================
+   SAMEAS INLINE VALIDATION (Schema tab — invalid URL list)
+   ============================================================ */
+
+.loomi-sameas-errors {
+	list-style: none;
+	margin: 8px 0 0;
+	padding: 8px 12px;
+	background: rgba(214, 54, 56, 0.1);
+	border-left: 3px solid #d63638;
+	border-radius: 4px;
+}
+.loomi-sameas-errors li {
+	color: #d63638;
+	font-size: 12px;
+	margin: 2px 0;
+	line-height: 1.4;
+}
+
+/* ============================================================
+   SCHEMA JSON-LD PREVIEW
+   ============================================================ */
+
+.loomi-schema-preview-output {
+	background: #0a0a0a;
+	color: #fbd603;
+	padding: 16px;
+	border-radius: 4px;
+	max-height: 400px;
+	overflow: auto;
+	font-family: "SF Mono", Monaco, Consolas, monospace;
+	font-size: 12px;
+	line-height: 1.5;
+	margin-top: 12px;
+	white-space: pre;
+}
+
+body.loomi-theme-light .loomi-schema-preview-output {
+	background: #fafafa;
+	color: #0a0a0a;
+	border: 1px solid #ddd;
+}

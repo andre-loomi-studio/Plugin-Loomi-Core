@@ -1,0 +1,174 @@
+/**
+ * Schema feature — admin styling.
+ *
+ * Loaded on:
+ *   - post.php / post-new.php (via Loomi_Schema_Metabox::enqueue_assets)
+ *   - settings_page_loomi-studio-setup when tab=schema (via Loomi_Settings_Page enqueue)
+ *
+ * No styles for the public frontend — only admin UI.
+ */
+
+/* ---- Metabox: per-post section ---- */
+
+.loomi-schema-metabox .loomi-schema-required {
+	color: #d63638;
+}
+
+.loomi-schema-metabox .loomi-area-row {
+	margin-bottom: 6px;
+	display: flex;
+	gap: 6px;
+	align-items: center;
+}
+
+.loomi-schema-metabox .loomi-faq-row {
+	border: 1px solid #c3c4c7;
+	padding: 10px;
+	margin-bottom: 10px;
+	background: #fff;
+}
+
+.loomi-schema-metabox .loomi-schema-custom-json {
+	font-family: monospace;
+}
+
+.loomi-schema-metabox .loomi-schema-custom-json-help {
+	margin: 8px 0 12px;
+}
+
+.loomi-schema-metabox .loomi-schema-custom-json-error {
+	color: #d63638;
+	margin-top: 8px;
+	font-weight: 600;
+}
+
+.loomi-schema-metabox .loomi-schema-product-wc-notice {
+	margin: 8px 0 12px;
+}
+
+.loomi-schema-metabox .loomi-schema-preview-separator {
+	margin: 24px 0 16px;
+}
+
+.loomi-schema-metabox .loomi-schema-preview-hint {
+	margin-left: 8px;
+}
+
+.loomi-schema-metabox .loomi-schema-post-preview-output {
+	max-height: 400px;
+	overflow: auto;
+	background: rgba( 0, 0, 0, 0.4 );
+	color: #e6e6e6;
+	padding: 12px;
+	border-radius: 4px;
+	font-size: 12px;
+	white-space: pre-wrap;
+	word-break: break-word;
+	margin-top: 12px;
+}
+
+.loomi-schema-metabox .loomi-schema-rich-results {
+	margin-top: 16px;
+}
+
+/* ---- Settings tab (Schema): global business data form ---- */
+
+.loomi-studio-wrap .loomi-required {
+	color: #d63638;
+	font-weight: 600;
+	margin-left: 4px;
+}
+
+.loomi-studio-wrap .loomi-schema-days {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 12px;
+	align-items: center;
+}
+
+.loomi-studio-wrap .loomi-schema-day {
+	display: inline-flex;
+	align-items: center;
+	gap: 4px;
+	font-size: 13px;
+}
+
+.loomi-studio-wrap .loomi-schema-hours__row {
+	display: flex;
+	gap: 16px;
+	align-items: flex-start;
+	flex-wrap: wrap;
+	margin-bottom: 16px;
+	padding: 12px;
+	border: 1px solid var( --loomi-border, #444 );
+	border-radius: 4px;
+}
+
+.loomi-studio-wrap .loomi-schema-hours__remove {
+	color: #d63638;
+	cursor: pointer;
+	background: none;
+	border: none;
+	padding: 4px 8px;
+}
+
+.loomi-studio-wrap .loomi-schema-hours__remove:hover {
+	background: rgba( 214, 54, 56, 0.1 );
+	border-radius: 4px;
+}
+
+.loomi-studio-wrap .loomi-schema-preview-output {
+	background: rgba( 0, 0, 0, 0.4 );
+	color: #e6e6e6;
+	padding: 12px;
+	border-radius: 4px;
+	font-size: 12px;
+	line-height: 1.5;
+	max-height: 320px;
+	overflow: auto;
+	white-space: pre-wrap;
+	word-break: break-word;
+}
+
+.loomi-studio-wrap .loomi-sameas-errors {
+	color: #d63638;
+	margin: 6px 0 0;
+	padding-left: 18px;
+	font-size: 12px;
+}
+
+/* ---- Maps URL → coords extractor (Geolocalização section) ---- */
+
+.loomi-studio-wrap .loomi-extract-row {
+	display: flex;
+	gap: 8px;
+	align-items: center;
+	flex-wrap: wrap;
+}
+
+.loomi-studio-wrap .loomi-extract-feedback {
+	margin-top: 6px;
+	font-size: 12px;
+	min-height: 1.2em;
+}
+
+.loomi-studio-wrap .loomi-extract-feedback.success {
+	color: #00a32a;
+}
+
+.loomi-studio-wrap .loomi-extract-feedback.error {
+	color: #d63638;
+}
+
+/* ---- priceRange quick-pick buttons ---- */
+
+.loomi-studio-wrap .loomi-pricerange-picker {
+	display: inline-flex;
+	gap: 4px;
+	margin-left: 8px;
+	vertical-align: middle;
+}
+
+.loomi-studio-wrap .loomi-pricerange-btn {
+	min-width: 38px;
+}

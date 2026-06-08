@@ -6,12 +6,17 @@
  * Cores acent: preto #000 + amarelo Loomi #FBD603 (mantêm em ambos os modos)
  */
 
-/* Theme tokens — dark default + auto base */
+/* Theme tokens — dark/auto-dark default.
+   IMPORTANT: do NOT couple body.wp-admin here. The theme class is the only
+   selector that defines the tokens, and PHP guarantees one is always present
+   (filter_admin_body_class falls back to loomi-theme-dark). Coupling
+   body.wp-admin to dark would tie at specificity (0,0,1,1) with light/auto
+   classes and break cascade in iframes / hot-reload scenarios. */
 body.loomi-theme-dark,
-body.loomi-theme-auto,
-body.wp-admin {
+body.loomi-theme-auto {
 	--loomi-g-bg: #000;
 	--loomi-g-bg-elevated: #0d0d0d;
+	--loomi-g-bg-elevated-hover: #262626;
 	--loomi-g-text: #fff;
 	--loomi-g-text-muted: rgba(255, 255, 255, 0.55);
 	--loomi-g-text-strong: #fff;
@@ -23,6 +28,7 @@ body.wp-admin {
 body.loomi-theme-light {
 	--loomi-g-bg: #ffffff;
 	--loomi-g-bg-elevated: #f8f8f8;
+	--loomi-g-bg-elevated-hover: #f0f0f0;
 	--loomi-g-text: #171717;
 	--loomi-g-text-muted: #6b6b6b;
 	--loomi-g-text-strong: #000;
@@ -35,6 +41,7 @@ body.loomi-theme-light {
 	body.loomi-theme-auto {
 		--loomi-g-bg: #ffffff;
 		--loomi-g-bg-elevated: #f8f8f8;
+		--loomi-g-bg-elevated-hover: #f0f0f0;
 		--loomi-g-text: #171717;
 		--loomi-g-text-muted: #6b6b6b;
 		--loomi-g-text-strong: #000;
@@ -80,7 +87,7 @@ body.loomi-theme-light {
 #wpadminbar .ab-submenu,
 #wpadminbar .quicklinks .menupop ul,
 #wpadminbar .quicklinks .menupop.hover ul {
-	background: #1a1a1a !important;
+	background: var(--loomi-g-bg-elevated) !important;
 	border-radius: 8px !important;
 	box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4) !important;
 	overflow: hidden;
@@ -90,8 +97,8 @@ body.loomi-theme-light {
 #wpadminbar .quicklinks .menupop ul li a,
 #wpadminbar .quicklinks .menupop.hover ul li a,
 #wpadminbar.nojs .quicklinks .menupop:hover ul li a {
-	color: #e5e5e5 !important;
-	background: #1a1a1a !important;
+	color: var(--loomi-g-text) !important;
+	background: var(--loomi-g-bg-elevated) !important;
 }
 
 #wpadminbar .ab-sub-wrapper a:hover,
@@ -100,13 +107,13 @@ body.loomi-theme-light {
 #wpadminbar .ab-submenu .ab-item:focus,
 #wpadminbar li.menupop .ab-sub-wrapper .ab-item:hover {
 	color: #FBD603 !important;
-	background: #262626 !important;
+	background: var(--loomi-g-bg-elevated-hover) !important;
 }
 
 /* Items dentro do admin bar dropdown NÃO devem ter fundo amarelo (mesmo current) */
 #wpadminbar .ab-submenu li.current .ab-item,
 #wpadminbar .ab-submenu li.wp-has-current-submenu .ab-item {
-	background: #1a1a1a !important;
+	background: var(--loomi-g-bg-elevated) !important;
 	color: #FBD603 !important;
 }
 
@@ -536,7 +543,7 @@ body.folded #adminmenuwrap,
 
 /* Submenu popup no estado folded REAL (sidebar manualmente collapsada) */
 .folded #adminmenu .wp-submenu {
-	background: #1a1a1a !important;
+	background: var(--loomi-g-bg-elevated) !important;
 	border-radius: 8px !important;
 	box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4) !important;
 	border: none !important;
@@ -893,7 +900,7 @@ body.loomi-theme-light .loomi-welcome-widget__product {
 #loomi_welcome_widget .inside {
 	padding: 0 !important;
 	margin: 0 !important;
-	background: #000 !important;
+	background: var(--loomi-g-bg) !important;
 }
 
 .loomi-welcome-widget {

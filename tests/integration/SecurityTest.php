@@ -46,7 +46,7 @@ class SecurityTest extends WP_UnitTestCase {
 
 		// build_custom always returns array, but the sanitizer is what blocks save.
 		// We test the sanitizer path directly via reflection of sanitize_payload.
-		$reflection = new ReflectionClass( 'Loomi_Schema' );
+		$reflection = new ReflectionClass( "Loomi_Schema_Sanitizer" );
 		$method     = $reflection->getMethod( 'sanitize_custom_json' );
 		$method->setAccessible( true );
 
@@ -56,7 +56,7 @@ class SecurityTest extends WP_UnitTestCase {
 	}
 
 	public function test_jsonld_closing_script_tag_case_insensitive() : void {
-		$reflection = new ReflectionClass( 'Loomi_Schema' );
+		$reflection = new ReflectionClass( "Loomi_Schema_Sanitizer" );
 		$method     = $reflection->getMethod( 'sanitize_custom_json' );
 		$method->setAccessible( true );
 
@@ -69,7 +69,7 @@ class SecurityTest extends WP_UnitTestCase {
 	}
 
 	public function test_jsonld_valid_payload_accepted() : void {
-		$reflection = new ReflectionClass( 'Loomi_Schema' );
+		$reflection = new ReflectionClass( "Loomi_Schema_Sanitizer" );
 		$method     = $reflection->getMethod( 'sanitize_custom_json' );
 		$method->setAccessible( true );
 
@@ -174,7 +174,10 @@ class SecurityTest extends WP_UnitTestCase {
 	public function test_login_bg_valid_hex() : void {
 		update_option( Plugin::OPTION_KEY, array_merge(
 			Settings_Repository::defaults(),
-			[ 'custom_login_bg_color' => '#FF00AA' ]
+			[
+				'custom_login_enabled'  => true,
+				'custom_login_bg_color' => '#FF00AA',
+			]
 		) );
 		Settings_Repository::clear_cache();
 
@@ -188,7 +191,10 @@ class SecurityTest extends WP_UnitTestCase {
 		// Simulate another plugin / migration writing a tampered value directly.
 		update_option( Plugin::OPTION_KEY, array_merge(
 			Settings_Repository::defaults(),
-			[ 'custom_login_bg_color' => 'red;}</style><script>alert(1)</script>' ]
+			[
+				'custom_login_enabled'  => true,
+				'custom_login_bg_color' => 'red;}</style><script>alert(1)</script>',
+			]
 		) );
 		Settings_Repository::clear_cache();
 

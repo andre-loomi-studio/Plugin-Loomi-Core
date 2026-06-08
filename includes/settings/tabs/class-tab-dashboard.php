@@ -93,12 +93,14 @@ class Tab_Dashboard implements Loomi_Settings_Tab {
 				<span class="loomi-theme-toggle__label"><?php esc_html_e( 'Tema', 'loomi-studio-setup' ); ?></span>
 				<div class="loomi-segmented">
 					<?php
-					$options = [
+					// Iterate the constant so adding a new theme value requires no change here.
+					$labels = [
 						'dark'  => __( 'Dark', 'loomi-studio-setup' ),
 						'light' => __( 'Light', 'loomi-studio-setup' ),
 						'auto'  => __( 'Auto', 'loomi-studio-setup' ),
 					];
-					foreach ( $options as $value => $label ) :
+					foreach ( Settings_Repository::THEME_VALUES as $value ) :
+						$label = isset( $labels[ $value ] ) ? $labels[ $value ] : ucfirst( $value );
 						?>
 						<label class="loomi-segmented__option <?php echo $current_theme === $value ? 'is-active' : ''; ?>">
 							<input type="radio" name="<?php echo esc_attr( Plugin::OPTION_KEY ); ?>[loomi_theme]" value="<?php echo esc_attr( $value ); ?>" <?php checked( $current_theme, $value ); ?> />

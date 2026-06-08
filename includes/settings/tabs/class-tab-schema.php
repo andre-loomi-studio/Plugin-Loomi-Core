@@ -86,6 +86,8 @@ class Tab_Schema implements Loomi_Settings_Tab {
 			<?php esc_html_e( 'Dados globais do negócio usados como base do schema LocalBusiness/MedicalBusiness em todas as páginas. Defina aqui uma vez; o módulo Schema consome esses valores no frontend.', 'loomi-studio-setup' ); ?>
 		</p>
 
+		<?php include LOOMI_STUDIO_DIR . 'includes/settings/views/schema/view-schema-tab-auto-schemas.php'; ?>
+
 		<h2><?php esc_html_e( 'Identificação', 'loomi-studio-setup' ); ?></h2>
 		<table class="form-table" role="presentation">
 			<tr><th scope="row"><label><?php esc_html_e( 'Nome', 'loomi-studio-setup' ); ?><?php echo $this->required_marker(); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- HTML escapado em required_marker() ?></label></th>
@@ -104,7 +106,15 @@ class Tab_Schema implements Loomi_Settings_Tab {
 				<td><input type="email" class="regular-text" name="<?php echo esc_attr( $prefix ); ?>[email]" value="<?php echo esc_attr( $g['email'] ?? '' ); ?>" /></td>
 			</tr>
 			<tr><th scope="row"><label><?php esc_html_e( 'Faixa de preço', 'loomi-studio-setup' ); ?></label></th>
-				<td><input type="text" class="small-text" name="<?php echo esc_attr( $prefix ); ?>[priceRange]" value="<?php echo esc_attr( $g['priceRange'] ?? '' ); ?>" placeholder="€€" /></td>
+				<td>
+					<input type="text" class="small-text" name="<?php echo esc_attr( $prefix ); ?>[priceRange]" value="<?php echo esc_attr( $g['priceRange'] ?? '' ); ?>" placeholder="€€" />
+					<span class="loomi-pricerange-presets">
+						<button type="button" class="button loomi-pricerange-btn" data-price="€">€</button>
+						<button type="button" class="button loomi-pricerange-btn" data-price="€€">€€</button>
+						<button type="button" class="button loomi-pricerange-btn" data-price="€€€">€€€</button>
+						<button type="button" class="button loomi-pricerange-btn" data-price="€€€€">€€€€</button>
+					</span>
+				</td>
 			</tr>
 		</table>
 
@@ -150,6 +160,20 @@ class Tab_Schema implements Loomi_Settings_Tab {
 
 		<h2><?php esc_html_e( 'Geolocalização', 'loomi-studio-setup' ); ?></h2>
 		<table class="form-table" role="presentation">
+			<tr>
+				<th scope="row"><label for="loomi-schema-maps-url"><?php esc_html_e( 'URL do Google Maps', 'loomi-studio-setup' ); ?></label></th>
+				<td>
+					<input type="url" id="loomi-schema-maps-url" class="large-text code"
+						placeholder="https://www.google.com/maps/place/..." />
+					<button type="button" class="button" id="loomi-schema-extract-coords">
+						<?php esc_html_e( 'Extrair coordenadas', 'loomi-studio-setup' ); ?>
+					</button>
+					<div class="loomi-extract-feedback"></div>
+					<p class="description">
+						<?php esc_html_e( 'Cole o URL completo do Google Maps; vamos extrair lat/lng automaticamente.', 'loomi-studio-setup' ); ?>
+					</p>
+				</td>
+			</tr>
 			<tr><th scope="row"><label><?php esc_html_e( 'Latitude', 'loomi-studio-setup' ); ?></label></th>
 				<td><input type="number" step="0.000001" min="-90" max="90" class="regular-text" name="<?php echo esc_attr( $prefix ); ?>[geo][latitude]" value="<?php echo esc_attr( $geo['latitude'] ?? '' ); ?>" /></td>
 			</tr>
@@ -241,176 +265,9 @@ class Tab_Schema implements Loomi_Settings_Tab {
 				<?php esc_html_e( 'Visualizar JSON-LD', 'loomi-studio-setup' ); ?>
 			</button>
 		</p>
-		<pre id="loomi-schema-preview-output" class="loomi-schema-preview-output" style="display:none;"></pre>
-
-		<script>
-			(function () {
-				var btn = document.getElementById('loomi-schema-preview-btn');
-				var out = document.getElementById('loomi-schema-preview-output');
-				if (!btn || !out) return;
-
-				var nonce  = <?php echo wp_json_encode( wp_create_nonce( 'loomi_schema_preview' ) ); ?>;
-				var url    = <?php echo wp_json_encode( admin_url( 'admin-ajax.php' ) ); ?>;
-				var prefix = <?php echo wp_json_encode( $prefix ); ?>;
-
-				btn.addEventListener('click', function () {
-					out.style.display = 'block';
-					out.textContent   = <?php echo wp_json_encode( __( 'Carregando…', 'loomi-studio-setup' ) ); ?>;
-
-					var form = btn.closest('form');
-					if (!form) {
-						out.textContent = <?php echo wp_json_encode( __( 'Erro: formulário não encontrado.', 'loomi-studio-setup' ) ); ?>;
-						return;
-					}
-
-					var fd = new FormData();
-					fd.append('action', 'loomi_schema_preview');
-					fd.append('_wpnonce', nonce);
-
-					// Collect every field from this tab that lives under loomi_schema_global
-					form.querySelectorAll('[name^="' + prefix + '"]').forEach(function (el) {
-						if (el.disabled) return;
-						if ((el.type === 'checkbox' || el.type === 'radio') && !el.checked) return;
-						// Rewrite the option-key prefix to a bare key for handle_preview()
-						var translated = el.name.replace(prefix, 'loomi_schema_global');
-						fd.append(translated, el.value);
-					});
-
-					fetch(url, { method: 'POST', body: fd, credentials: 'same-origin' })
-						.then(function (r) { return r.json(); })
-						.then(function (data) {
-							if (data && data.success) {
-								out.textContent = JSON.stringify(data.data.jsonld, null, 2);
-							} else {
-								var msg = (data && data.data && data.data.message) ? data.data.message : 'desconhecido';
-								out.textContent = 'Erro: ' + msg;
-							}
-						})
-						.catch(function (e) { out.textContent = 'Erro: ' + e.message; });
-				});
-			})();
-		</script>
-
-		<style>
-			.loomi-schema-days { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; }
-			.loomi-schema-day { display: inline-flex; align-items: center; gap: 4px; font-size: 13px; }
-			.loomi-schema-hours__row { display: flex; gap: 16px; align-items: flex-start; flex-wrap: wrap; margin-bottom: 16px; padding: 12px; border: 1px solid var(--loomi-border, #444); border-radius: 4px; }
-			.loomi-schema-hours__remove { color: #d63638; cursor: pointer; background: none; border: none; padding: 4px 8px; }
-			.loomi-schema-hours__remove:hover { background: rgba(214, 54, 56, 0.1); border-radius: 4px; }
-		</style>
-
-		<script>
-			(function () {
-				var container = document.querySelector('.loomi-schema-hours');
-				if (!container) return;
-				var template  = document.getElementById('loomi-schema-hours-template');
-				var addBtn    = document.querySelector('.loomi-schema-hours__add');
-
-				function updateRemoveButtons() {
-					var rows = container.querySelectorAll('.loomi-schema-hours__row');
-					rows.forEach(function (row) {
-						var btn = row.querySelector('.loomi-schema-hours__remove');
-						if (btn) btn.style.display = rows.length > 1 ? '' : 'none';
-					});
-				}
-
-				function reindex() {
-					var rows = container.querySelectorAll('.loomi-schema-hours__row');
-					rows.forEach(function (row, idx) {
-						row.setAttribute('data-row-index', idx);
-						row.querySelectorAll('[name*="[openingHours]["]').forEach(function (input) {
-							input.name = input.name.replace(/\[openingHours\]\[\d+\]/, '[openingHours][' + idx + ']');
-							input.name = input.name.replace(/\[openingHours\]\[__INDEX__\]/, '[openingHours][' + idx + ']');
-						});
-					});
-				}
-
-				if (addBtn && template) {
-					addBtn.addEventListener('click', function () {
-						var clone = template.content.cloneNode(true);
-						// Insert before the description <p> / add button block: append to container then move add button below.
-						// Simpler: insert clone before the description paragraph if present, else append.
-						var desc = container.querySelector('p.description');
-						if (desc) {
-							container.insertBefore(clone, desc);
-						} else {
-							container.appendChild(clone);
-						}
-						reindex();
-						updateRemoveButtons();
-					});
-				}
-
-				container.addEventListener('click', function (e) {
-					var removeBtn = e.target.closest('.loomi-schema-hours__remove');
-					if (!removeBtn) return;
-					var row = removeBtn.closest('.loomi-schema-hours__row');
-					if (row && container.querySelectorAll('.loomi-schema-hours__row').length > 1) {
-						row.remove();
-						reindex();
-						updateRemoveButtons();
-					}
-				});
-
-				updateRemoveButtons();
-			})();
-		</script>
-
-		<script>
-			document.querySelectorAll('input[name*="[geo][latitude]"], input[name*="[geo][longitude]"]')
-				.forEach(function (el) {
-					el.addEventListener('input', function (e) {
-						if (e.target.value.indexOf(',') !== -1) {
-							e.target.value = e.target.value.replace(',', '.');
-						}
-					});
-				});
-		</script>
-
-		<script>
-			(function () {
-				var ta = document.querySelector('textarea[name*="[sameAs]"]');
-				if (!ta) return;
-				var errList = document.querySelector('.loomi-sameas-errors');
-				if (!errList) return;
-
-				function validate() {
-					var errors = [];
-					var lines = ta.value.split('\n');
-					lines.forEach(function (line, idx) {
-						var trimmed = line.trim();
-						if (trimmed === '') return;
-						if (!/^https?:\/\/[^\s]+$/i.test(trimmed)) {
-							errors.push('Linha ' + (idx + 1) + ': URL inválida (' + trimmed.substring(0, 40) + ')');
-						}
-					});
-
-					if (errors.length === 0) {
-						errList.style.display = 'none';
-						errList.innerHTML = '';
-					} else {
-						errList.innerHTML = errors.map(function (e) { return '<li>' + e.replace(/</g, '&lt;').replace(/>/g, '&gt;') + '</li>'; }).join('');
-						errList.style.display = 'block';
-					}
-				}
-
-				ta.addEventListener('blur', validate);
-				// Validate on initial load if textarea has content
-				if (ta.value.trim() !== '') validate();
-			})();
-		</script>
-
-		<script>
-			(function () {
-				var sel = document.getElementById('loomi-schema-country');
-				var other = document.getElementById('loomi-schema-country-other');
-				if (!sel || !other) return;
-				function sync() {
-					other.style.display = (sel.value === 'other') ? 'inline-block' : 'none';
-				}
-				sel.addEventListener('change', sync);
-			})();
-		</script>
+		<pre id="loomi-schema-preview-output" class="loomi-schema-preview-output" hidden></pre>
 		<?php
+		// JS lives in assets/schema-tab.js (enqueued by Loomi_Settings_Page::enqueue_assets).
+		// CSS lives in assets/schema-admin.css.
 	}
 }

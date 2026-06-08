@@ -10,10 +10,11 @@
 	--loomi-radius-sm: 6px;
 }
 
-/* === Tema DARK (default + base pro auto) === */
+/* === Tema DARK (default + base pro auto) ===
+   Não acoplar o bare .loomi-studio-wrap aqui — PHP garante que body sempre tem
+   loomi-theme-X (filter_admin_body_class). Acoplar quebraria a simetria com light. */
 body.loomi-theme-dark .loomi-studio-wrap,
-body.loomi-theme-auto .loomi-studio-wrap,
-.loomi-studio-wrap {
+body.loomi-theme-auto .loomi-studio-wrap {
 	--loomi-bg: #0a0a0a;
 	--loomi-bg-elevated: #131313;
 	--loomi-gray-50: #161616;
@@ -616,40 +617,44 @@ body.loomi-theme-light .loomi-studio-wrap {
 	outline-offset: 1px;
 }
 
-/* === Primary button === */
+/* === Primary button (Save Changes) === */
+/* Yellow + black = máxima legibilidade no tema dark e ainda boa no light. */
 .loomi-studio-wrap .button-primary,
 .loomi-studio-wrap p.submit .button-primary {
-	background: var(--loomi-black);
+	background: var(--loomi-yellow);
 	border: none;
-	color: var(--loomi-white);
-	box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+	color: var(--loomi-black);
+	box-shadow: 0 2px 8px rgba(251, 214, 3, 0.25);
 	text-shadow: none;
 	padding: 12px 32px;
 	border-radius: var(--loomi-radius-sm);
-	font-weight: 600;
+	font-weight: 700;
 	font-size: 14px;
 	letter-spacing: 0.2px;
 	min-height: auto;
 	line-height: 1.4;
-	transition: background 0.2s ease, color 0.2s ease, transform 0.1s ease;
+	transition: background 0.2s ease, color 0.2s ease, transform 0.1s ease, box-shadow 0.2s ease;
 	cursor: pointer;
 }
 
 .loomi-studio-wrap .button-primary:hover {
-	background: var(--loomi-yellow);
+	background: #ffe338;
 	color: var(--loomi-black);
-	box-shadow: 0 4px 12px rgba(251, 214, 3, 0.35);
+	box-shadow: 0 6px 18px rgba(251, 214, 3, 0.45);
 	transform: translateY(-1px);
 }
 
 .loomi-studio-wrap .button-primary:active {
+	background: #e6c200;
 	transform: translateY(0);
+	box-shadow: 0 2px 6px rgba(251, 214, 3, 0.3);
 }
 
-.loomi-studio-wrap .button-primary:focus {
+.loomi-studio-wrap .button-primary:focus,
+.loomi-studio-wrap .button-primary:focus-visible {
 	background: var(--loomi-yellow);
 	color: var(--loomi-black);
-	outline: 3px solid rgba(0, 0, 0, 0.15);
+	outline: 3px solid rgba(251, 214, 3, 0.45);
 	outline-offset: 2px;
 }
 
@@ -1180,4 +1185,13 @@ body.loomi-theme-light .loomi-studio-wrap {
 	.loomi-studio-wrap p.submit {
 		padding: 20px 24px;
 	}
+}
+
+/* ---- Maps tab: zoom presets ---- */
+
+.loomi-studio-wrap .loomi-zoom-presets {
+	display: inline-flex;
+	gap: 4px;
+	margin-left: 8px;
+	vertical-align: middle;
 }

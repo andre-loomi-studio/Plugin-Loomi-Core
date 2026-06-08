@@ -9,8 +9,10 @@ class Loomi_Login implements Loomi_Module {
 	const ALLOWED_LOGIN_ACTIONS = [ 'logout', 'lostpassword', 'retrievepassword', 'rp', 'resetpass', 'postpass', 'register' ];
 
 	public static function register() : void {
+		// Hook unconditionally so the Customizer preview can still render styles when
+		// the toggle is OFF — the function itself bails if neither enabled nor previewing.
+		add_action( 'login_enqueue_scripts', [ __CLASS__, 'inject_login_styles' ] );
 		if ( Settings_Repository::get_bool( 'custom_login_enabled' ) ) {
-			add_action( 'login_enqueue_scripts', [ __CLASS__, 'inject_login_styles' ] );
 			add_filter( 'login_headerurl', [ __CLASS__, 'login_logo_url' ] );
 			add_filter( 'login_headertext', [ __CLASS__, 'login_logo_title' ] );
 		}
@@ -41,6 +43,11 @@ class Loomi_Login implements Loomi_Module {
 	}
 
 	public static function inject_login_styles() : void {
+		$enabled    = Settings_Repository::get_bool( 'custom_login_enabled' );
+		$is_preview = self::is_customize_preview_request();
+		if ( ! $enabled && ! $is_preview ) {
+			return;
+		}
 		$bg = (string) Settings_Repository::get( 'custom_login_bg_color', '#000000' );
 		// Defense-in-depth: re-valida o hex aqui — sanitize_hex_color cobre input via UI mas
 		// não impede que outro plugin/migração escreva valor arbitrário direto na option.
@@ -50,6 +57,11 @@ class Loomi_Login implements Loomi_Module {
 		}
 		$logo_id  = (int) Settings_Repository::get( 'custom_login_logo_id', 0 );
 		$logo_url = $logo_id ? wp_get_attachment_url( $logo_id ) : '';
+		$logo_w   = (int) Settings_Repository::get( 'custom_login_logo_width', 320 );
+		$logo_h   = (int) Settings_Repository::get( 'custom_login_logo_height', 120 );
+		// Clamp range to defense against tampering at render time.
+		if ( $logo_w < 50 || $logo_w > 600 ) { $logo_w = 320; }
+		if ( $logo_h < 50 || $logo_h > 600 ) { $logo_h = 120; }
 
 		$css  = 'body.login{background:' . $bg . ' !important;}';
 		$css .= '#nav a,#backtoblog a,.privacy-policy-link{color:#fff !important;}';
@@ -58,13 +70,32 @@ class Loomi_Login implements Loomi_Module {
 		if ( $logo_url ) {
 			$css .= '.login h1 a{'
 				. 'background-image:url("' . esc_url( $logo_url ) . '") !important;'
-				. 'width:320px !important;height:120px !important;margin-bottom:60px !important;'
+				. 'width:' . $logo_w . 'px !important;height:' . $logo_h . 'px !important;margin-bottom:60px !important;'
 				. 'background-size:contain !important;background-position:center center !important;'
 				. 'background-repeat:no-repeat !important;'
 				. '}';
 		}
 
+		// [DEBUG] Keep a slim diagnostic comment in Customizer preview only — handy when
+		// debugging future regressions. Removed automatically outside preview.
+		if ( $is_preview ) {
+			echo sprintf(
+				"<!-- loomi-login preview: bg=%s w=%d h=%d -->\n",
+				esc_attr( $bg ),
+				$logo_w,
+				$logo_h
+			);
+		}
 		echo "<style id=\"loomi-login\">{$css}</style>\n";
+	}
+
+	/**
+	 * True if the current request is loaded inside the Customizer preview iframe.
+	 * Detects via the messenger query params, which are present early — before
+	 * is_customize_preview() becomes reliable on wp-login.php.
+	 */
+	public static function is_customize_preview_request() : bool {
+		return isset( $_GET['customize_messenger_channel'] ) || isset( $_GET['customize_changeset_uuid'] );
 	}
 
 	public static function login_logo_url() : string {
@@ -92,6 +123,26 @@ class Loomi_Login implements Loomi_Module {
 		if ( ! defined( 'LOOMI_LOGIN_ROUTE' ) ) {
 			define( 'LOOMI_LOGIN_ROUTE', true );
 		}
+
+		// If we're inside a Customizer preview iframe, prime the customize manager's
+		// option overlay filters BEFORE requiring wp-login.php. We hook on `init`
+		// priority 1 — earlier than `wp_loaded` where the manager normally wires
+		// its `option_<key>` filters that overlay changeset values. Without this,
+		// wp-login.php runs (via the require below) and reads stale DB values.
+		if ( isset( $GLOBALS['wp_customize'] ) && $GLOBALS['wp_customize'] instanceof WP_Customize_Manager ) {
+			$manager = $GLOBALS['wp_customize'];
+			if ( ! did_action( 'customize_register' ) ) {
+				do_action( 'customize_register', $manager );
+			}
+			if ( method_exists( $manager, 'is_preview' ) && $manager->is_preview() ) {
+				foreach ( $manager->settings() as $setting ) {
+					if ( $setting->check_capabilities() ) {
+						$setting->preview();
+					}
+				}
+			}
+		}
+
 		require ABSPATH . 'wp-login.php';
 		exit;
 	}

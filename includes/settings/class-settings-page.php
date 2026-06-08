@@ -19,16 +19,96 @@ class Loomi_Settings_Page implements Loomi_Module {
 		add_filter( 'admin_footer_text', [ __CLASS__, 'admin_footer_text' ], 99 );
 		add_filter( 'update_footer', [ __CLASS__, 'update_footer' ], 99 );
 
-		// Theme class no <body>
+		// Theme class no <body> — admin standard pages, wp-login.php and Customizer chrome.
 		add_filter( 'admin_body_class', [ __CLASS__, 'filter_admin_body_class' ] );
+		add_filter( 'login_body_class', [ __CLASS__, 'filter_login_body_class' ] );
+		add_action( 'customize_controls_print_footer_scripts', [ __CLASS__, 'inject_customizer_body_class' ] );
+
+		// REST endpoint for instant theme persistence (no Save Changes click required).
+		add_action( 'rest_api_init', [ __CLASS__, 'register_rest_route' ] );
 	}
 
-	public static function filter_admin_body_class( $classes ) {
+	/**
+	 * Resolve the body class for the current stored theme. Falls back to 'loomi-theme-dark'
+	 * when the option is missing or contains an unrecognized value. Single source of truth
+	 * shared by the admin/login/customizer filters.
+	 */
+	private static function resolve_theme_class() : string {
 		$theme = (string) Settings_Repository::get( 'loomi_theme', 'dark' );
 		if ( ! in_array( $theme, Settings_Repository::THEME_VALUES, true ) ) {
 			$theme = 'dark';
 		}
-		return $classes . ' loomi-theme-' . $theme;
+		return 'loomi-theme-' . $theme;
+	}
+
+	public static function filter_admin_body_class( $classes ) {
+		return $classes . ' ' . self::resolve_theme_class();
+	}
+
+	public static function filter_login_body_class( $classes ) {
+		if ( ! is_array( $classes ) ) {
+			$classes = [];
+		}
+		$classes[] = self::resolve_theme_class();
+		return $classes;
+	}
+
+	/**
+	 * Inject the theme class on the Customizer chrome body. The standard admin_body_class
+	 * filter does not reliably apply on customize.php, so we do it via inline JS in the
+	 * controls footer — runs once on load.
+	 */
+	public static function inject_customizer_body_class() : void {
+		$class = self::resolve_theme_class();
+		?>
+		<script>
+			(function () {
+				if ( document.body && ! document.body.classList.contains(<?php echo wp_json_encode( $class ); ?>) ) {
+					document.body.classList.add(<?php echo wp_json_encode( $class ); ?>);
+				}
+			})();
+		</script>
+		<?php
+	}
+
+	/**
+	 * Register the REST route POST /loomi/v1/theme used by the dashboard toggle.
+	 * Permission: manage_options. Param validation against Settings_Repository::THEME_VALUES.
+	 */
+	public static function register_rest_route() : void {
+		register_rest_route(
+			'loomi/v1',
+			'/theme',
+			[
+				'methods'             => 'POST',
+				'callback'            => [ __CLASS__, 'handle_set_theme' ],
+				'permission_callback' => static function () {
+					return current_user_can( 'manage_options' );
+				},
+				'args'                => [
+					'theme' => [
+						'required'          => true,
+						'type'              => 'string',
+						'sanitize_callback' => 'sanitize_key',
+						'validate_callback' => static function ( $value ) {
+							return in_array( (string) $value, Settings_Repository::THEME_VALUES, true );
+						},
+					],
+				],
+			]
+		);
+	}
+
+	public static function handle_set_theme( WP_REST_Request $req ) {
+		$theme = (string) $req->get_param( 'theme' );
+		$opts  = get_option( Plugin::OPTION_KEY, [] );
+		if ( ! is_array( $opts ) ) {
+			$opts = [];
+		}
+		$opts['loomi_theme'] = $theme;
+		update_option( Plugin::OPTION_KEY, $opts );
+		Settings_Repository::clear_cache();
+		return [ 'theme' => $theme ];
 	}
 
 	public static function remove_wp_logo() : void {
@@ -71,6 +151,7 @@ class Loomi_Settings_Page implements Loomi_Module {
 			new Tab_Anti_Spam(),
 			new Tab_Schema(),
 			new Tab_GTM(),
+			new Tab_Maps(),
 			new Tab_Logs(),
 		];
 	}
@@ -104,12 +185,65 @@ class Loomi_Settings_Page implements Loomi_Module {
 		wp_enqueue_media();
 		wp_enqueue_style( 'wp-color-picker' );
 		wp_enqueue_script( 'wp-color-picker' );
+		// wp-api-fetch ships the REST nonce automatically — needed by the theme toggle JS.
+		wp_enqueue_script( 'wp-api-fetch' );
 		wp_enqueue_style(
 			'loomi-studio-admin',
 			LOOMI_STUDIO_URL . 'assets/admin.css',
 			[],
 			Plugin::version()
 		);
+		self::enqueue_schema_tab_assets();
+		self::enqueue_maps_tab_assets();
+	}
+
+	/**
+	 * Enqueue the Maps settings tab JS. Conditional on the active tab being
+	 * 'maps' (read from $_GET['tab']) since the script only acts on Maps tab
+	 * UI controls.
+	 */
+	private static function enqueue_maps_tab_assets() : void {
+		$active = isset( $_GET['tab'] ) ? sanitize_key( wp_unslash( $_GET['tab'] ) ) : '';
+		if ( $active !== 'maps' ) {
+			return;
+		}
+		wp_enqueue_script(
+			'loomi-maps-tab',
+			LOOMI_STUDIO_URL . 'assets/maps-tab.js',
+			[],
+			Plugin::version(),
+			true
+		);
+	}
+
+	/**
+	 * Enqueue the Schema settings tab assets (JS + CSS) only on the plugin
+	 * settings page. Localizes runtime config (nonce, AJAX URL, option prefix,
+	 * i18n strings) via wp_localize_script — no PHP interpolation in JS.
+	 */
+	private static function enqueue_schema_tab_assets() : void {
+		wp_enqueue_style(
+			'loomi-schema-admin',
+			LOOMI_STUDIO_URL . 'assets/schema-admin.css',
+			[],
+			Plugin::version()
+		);
+		wp_enqueue_script(
+			'loomi-schema-tab',
+			LOOMI_STUDIO_URL . 'assets/schema-tab.js',
+			[],
+			Plugin::version(),
+			true
+		);
+		wp_localize_script( 'loomi-schema-tab', 'LoomiSchemaTab', [
+			'nonce'        => wp_create_nonce( 'loomi_schema_preview' ),
+			'ajaxUrl'      => admin_url( 'admin-ajax.php' ),
+			'optionPrefix' => Plugin::OPTION_KEY . '[loomi_schema_global]',
+			'i18n'         => [
+				'loading'     => __( 'Carregando…', 'loomi-studio-setup' ),
+				'formMissing' => __( 'Erro: formulário não encontrado.', 'loomi-studio-setup' ),
+			],
+		] );
 	}
 
 	public static function render() : void {
@@ -177,6 +311,29 @@ class Loomi_Settings_Page implements Loomi_Module {
 				// Initial state
 				var activeNow = $('.loomi-tab-link.nav-tab-active').data('tab-target');
 				if (activeNow) syncDashboardClass(activeNow);
+
+				// Theme toggle: optimistic body class swap + REST persistence.
+				// Works on any tab — does not require Save Changes (the form submit button
+				// is hidden on the Dashboard tab where the toggle lives).
+				var themeRadioSelector = 'input[name="<?php echo esc_js( Plugin::OPTION_KEY ); ?>[loomi_theme]"]';
+				$(document).on('change', themeRadioSelector, function () {
+					var value = String(this.value || '').trim();
+					if (!/^(dark|light|auto)$/.test(value)) return;
+					document.body.classList.remove('loomi-theme-dark', 'loomi-theme-light', 'loomi-theme-auto');
+					document.body.classList.add('loomi-theme-' + value);
+					// Sync `.is-active` on segmented option labels.
+					$('.loomi-segmented__option').removeClass('is-active');
+					$(this).closest('.loomi-segmented__option').addClass('is-active');
+					if (window.wp && wp.apiFetch) {
+						wp.apiFetch({
+							path: '/loomi/v1/theme',
+							method: 'POST',
+							data: { theme: value }
+						}).catch(function (err) {
+							if (window.console) console.warn('[loomi] theme persist failed', err);
+						});
+					}
+				});
 
 				$('.loomi-tab-link').on('click', function (e) {
 					e.preventDefault();
